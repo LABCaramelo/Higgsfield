@@ -140,6 +140,38 @@ MODELS: Dict[str, Dict[str, Any]] = {
             "aspect_ratio": "16:9",
             "resolution": "2k"
         }
+    },
+
+    # --- AUDIO MODELS ---
+    "speak_2_0": {
+        "name": "Higgsfield Speak 2.0",
+        "type": "audio",
+        "description": "Expressive dialogue and narration engine with multilingual speech across 30+ languages, stability and similarity controls.",
+        "defaults": {
+            "voice": "marcus_narrator",
+            "stability": 0.75,
+            "similarity": 0.85,
+            "style_exaggeration": 0.20,
+            "speed": 1.0
+        },
+        "allowed_languages": ["en", "pt", "es", "ja", "de", "fr", "ko", "it"]
+    },
+    "eleven_v4": {
+        "name": "Eleven v4",
+        "type": "audio",
+        "description": "Multi-speaker dialogue engine supporting up to 10 distinct voices in a single scene.",
+        "defaults": {
+            "max_speakers": 10,
+            "format": "mp3_44khz"
+        }
+    },
+    "turbo_speech": {
+        "name": "Turbo Speech",
+        "type": "audio",
+        "description": "Ultra-fast low-latency text-to-speech for rapid storyboard mockups.",
+        "defaults": {
+            "speed": 1.0
+        }
     }
 }
 

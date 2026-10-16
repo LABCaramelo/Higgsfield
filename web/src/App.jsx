@@ -7,8 +7,9 @@ import {
   Eye, Download, Maximize2, Plus, Search, Heart, Folder, Home, Grid, 
   SlidersHorizontal, Camera, Clock, MoveHorizontal, Disc, SlidersVertical,
   Scissors, ArrowRight, CornerDownRight, Split, Flame, FastForward, Activity,
-  Repeat, UserCheck
+  Repeat, UserCheck, Mic, Headphones, Music, Trash2, Radio
 } from 'lucide-react';
+
 
 
 const FEATURED_CAROUSEL = [
@@ -173,8 +174,55 @@ const GENJUTSU_CHARACTER_PRESETS = [
   }
 ];
 
+const AUDIO_VOICE_PRESETS = [
+  {
+    id: "marcus_narrator",
+    name: "Marcus",
+    role: "Cinematic Trailer & Doc",
+    tone: "Deep, Authoritative, Resonant",
+    gender: "Male",
+    accent: "American (General)",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+    sampleRate: "48 kHz",
+    bitrate: "320 kbps"
+  },
+  {
+    id: "elena_editorial",
+    name: "Elena",
+    role: "Editorial Muse & Luxury",
+    tone: "Warm, Sophisticated, Crisp",
+    gender: "Female",
+    accent: "British (RP)",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+    sampleRate: "48 kHz",
+    bitrate: "320 kbps"
+  },
+  {
+    id: "kai_cyberpunk",
+    name: "Kai",
+    role: "Modern Dialogue & Sci-Fi",
+    tone: "Intense, Close-Mic, Dynamic",
+    gender: "Male",
+    accent: "Urban West Coast",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80",
+    sampleRate: "48 kHz",
+    bitrate: "320 kbps"
+  },
+  {
+    id: "aria_whisper",
+    name: "Aria",
+    role: "Poetic & Intimate Narration",
+    tone: "Soft, Emotive, Breathy",
+    gender: "Female",
+    accent: "Mid-Atlantic",
+    avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80",
+    sampleRate: "48 kHz",
+    bitrate: "320 kbps"
+  }
+];
+
 export default function App() {
-  const [activeTab, setActiveTab] = useState('explore'); // 'explore' | 'video' | 'image' | 'genjutsu' | 'mcp'
+  const [activeTab, setActiveTab] = useState('explore'); // 'explore' | 'video' | 'image' | 'genjutsu' | 'audio' | 'mcp'
   const [copied, setCopied] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -198,7 +246,51 @@ export default function App() {
   const activeMotion = GENJUTSU_MOTION_PRESETS.find(m => m.id === selectedMotionId) || GENJUTSU_MOTION_PRESETS[0];
   const activeCharacter = GENJUTSU_CHARACTER_PRESETS.find(c => c.id === selectedCharacterId) || GENJUTSU_CHARACTER_PRESETS[0];
 
-  // URL sync for ?model=genjutsu or /ai/video?model=genjutsu
+  // ==========================================
+  // AUDIO STUDIO (SPEAK 2.0 / ELEVEN V4) STATE
+  // ==========================================
+  const [selectedAudioModel, setSelectedAudioModel] = useState('speak_2_0'); // 'speak_2_0' | 'eleven_v4' | 'turbo_speech'
+  const [audioStability, setAudioStability] = useState(75);
+  const [audioSimilarity, setAudioSimilarity] = useState(85);
+  const [audioExaggeration, setAudioExaggeration] = useState(25);
+  const [audioSpeed, setAudioSpeed] = useState(1.0);
+  const [audioLanguage, setAudioLanguage] = useState('en');
+  const [isAudioGenerating, setIsAudioGenerating] = useState(false);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [activeAudioSpeaker, setActiveAudioSpeaker] = useState('marcus_narrator');
+  const [showVoicePicker, setShowVoicePicker] = useState(false);
+
+  const [dialogueCards, setDialogueCards] = useState([
+    {
+      id: "card_1",
+      speakerNumber: 1,
+      voiceId: "marcus_narrator",
+      speakerName: "Marcus (Narrator)",
+      script: "We build systems not just to generate frames, but to capture the exact tension between stillness and speed.",
+      duration: "4.8s",
+      status: "ready"
+    },
+    {
+      id: "card_2",
+      speakerNumber: 2,
+      voiceId: "elena_editorial",
+      speakerName: "Elena (Muse)",
+      script: "Every shadow in this city holds a frequency. If you listen close enough, you can hear the pulse before the light breaks.",
+      duration: "5.4s",
+      status: "ready"
+    },
+    {
+      id: "card_3",
+      speakerNumber: 3,
+      voiceId: "kai_cyberpunk",
+      speakerName: "Kai (Operator)",
+      script: "Lock all sensors on sector nine. The kinetic transfer begins in three, two, one...",
+      duration: "3.9s",
+      status: "ready"
+    }
+  ]);
+
+  // URL sync for ?model=genjutsu or /audio
   useEffect(() => {
     try {
       const search = window.location.search;
@@ -206,6 +298,8 @@ export default function App() {
       const pathname = window.location.pathname;
       if (params.get('model') === 'genjutsu' || pathname.includes('genjutsu')) {
         setActiveTab('genjutsu');
+      } else if (pathname.includes('/audio') || params.get('tab') === 'audio') {
+        setActiveTab('audio');
       }
     } catch(e) {}
   }, []);
@@ -216,6 +310,13 @@ export default function App() {
       const url = new URL(window.location.href);
       url.searchParams.set('model', 'genjutsu');
       window.history.pushState({}, '', url.toString());
+    } catch(e) {}
+  };
+
+  const navigateToAudio = () => {
+    setActiveTab('audio');
+    try {
+      window.history.pushState({}, '', '/audio');
     } catch(e) {}
   };
 
@@ -432,6 +533,73 @@ export default function App() {
     setActiveTab('video');
   };
 
+  // Audio Studio Actions
+  const handleAddDialogueCard = () => {
+    const nextNum = dialogueCards.length + 1;
+    const defaultVoice = AUDIO_VOICE_PRESETS[(nextNum - 1) % AUDIO_VOICE_PRESETS.length];
+    const newCard = {
+      id: "card_" + Date.now(),
+      speakerNumber: nextNum,
+      voiceId: defaultVoice.id,
+      speakerName: `${defaultVoice.name} (${defaultVoice.role.split(' ')[0]})`,
+      script: "",
+      duration: "0.0s",
+      status: "draft"
+    };
+    setDialogueCards(prev => [...prev, newCard]);
+  };
+
+  const handleDeleteDialogueCard = (cardId) => {
+    if (dialogueCards.length <= 1) return;
+    setDialogueCards(prev => prev.filter(c => c.id !== cardId));
+  };
+
+  const handleUpdateCardScript = (cardId, text) => {
+    setDialogueCards(prev => prev.map(c => c.id === cardId ? { 
+      ...c, 
+      script: text, 
+      duration: `${Math.max(1.8, (text.trim().split(/\s+/).filter(Boolean).length * 0.42)).toFixed(1)}s` 
+    } : c));
+  };
+
+  const handleUpdateCardVoice = (cardId, voiceId) => {
+    const v = AUDIO_VOICE_PRESETS.find(p => p.id === voiceId) || AUDIO_VOICE_PRESETS[0];
+    setDialogueCards(prev => prev.map(c => c.id === cardId ? { 
+      ...c, 
+      voiceId: v.id, 
+      speakerName: `${v.name} (${v.role.split(' ')[0]})` 
+    } : c));
+  };
+
+  const handleGenerateAudio = () => {
+    setIsAudioGenerating(true);
+    setTimeout(() => {
+      setDialogueCards(prev => prev.map(c => ({ ...c, status: "ready" })));
+      setIsAudioGenerating(false);
+    }, 2200);
+  };
+
+  const handleAttachAudioToCinema = () => {
+    const combinedScript = dialogueCards.map(c => `[${c.speakerName}]: "${c.script}"`).join(' ');
+    const newId = "shot_audio_" + Date.now();
+    const newShot = {
+      id: newId,
+      name: `Scene Dialogue: ${dialogueCards.length} Speakers (Speak 2.0)`,
+      model: "seedance_2_5",
+      camera: "Audio Track Sync 48kHz",
+      aspect: "16:9",
+      duration: "10s",
+      videoUrl: "https://static-public-media.higgsfield.ai/cards/c94a765b-8ad6-4af3-b884-88ea306d79ff.mp4",
+      thumb: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80",
+      prompt: `Cinematic performance synchronized to studio vocal track: ${combinedScript}`
+    };
+    setShots(prev => [newShot, ...prev]);
+    setActiveShotId(newId);
+    setVideoPrompt(newShot.prompt);
+    setActiveTab('video');
+  };
+
+
 
   const openInStudio = (presetPrompt, presetModel = 'seedance_2_5', presetVideo = null) => {
     setVideoPrompt(presetPrompt);
@@ -525,6 +693,12 @@ export default function App() {
             >
               <Zap className="w-3.5 h-3.5 text-[#f472b6]" /> Genjutsu
               <span className="text-[9px] bg-white/20 text-white px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">top</span>
+            </button>
+            <button 
+              onClick={navigateToAudio}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${activeTab === 'audio' ? 'bg-[#38bdf8] text-black shadow-sm' : 'text-[#92939e] hover:text-white'}`}
+            >
+              <Mic className="w-3.5 h-3.5" /> Audio
             </button>
             <button 
               onClick={() => setActiveTab('mcp')}
@@ -1931,6 +2105,369 @@ export default function App() {
                     ) : (
                       <>
                         <Zap className="w-3.5 h-3.5 fill-white" /> Transfer Motion • 15 credits
+                      </>
+                    )}
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+          </section>
+
+        </div>
+      )}
+
+      {/* =========================================================================
+          VIEW 3.8: HIGGSFIELD AUDIO STUDIO (/audio)
+          ========================================================================= */}
+      {activeTab === 'audio' && (
+        <div className="flex-1 flex overflow-hidden">
+          
+          {/* LEFT CONTROL SIDEBAR: AUDIO ENGINE & VOICE ROSTER */}
+          <aside className="w-[340px] shrink-0 border-r border-white/8 bg-[#121316] flex flex-col overflow-y-auto">
+            {/* Header Badge */}
+            <div className="p-4 border-b border-white/8 flex items-center justify-between bg-gradient-to-r from-[#0284c7]/15 to-[#38bdf8]/15">
+              <div className="flex items-center gap-2">
+                <span className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#0284c7] to-[#38bdf8] flex items-center justify-center text-black shadow-[0_0_12px_rgba(56,189,248,0.4)]">
+                  <Mic className="w-4 h-4 fill-black" />
+                </span>
+                <div>
+                  <h3 className="font-bold text-sm text-white flex items-center gap-1.5">
+                    Higgsfield Audio
+                    <span className="text-[9px] bg-[#38bdf8]/20 text-[#38bdf8] border border-[#38bdf8]/40 px-1 rounded uppercase font-bold">2.0</span>
+                  </h3>
+                  <p className="text-[11px] text-[#92939e]">Voice Narration & Multi-Speaker Dialogue</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 space-y-5">
+              {/* Engine Model Switcher */}
+              <div>
+                <label className="text-[10px] font-bold text-[#92939e] uppercase tracking-wider block mb-2">
+                  Speech Synthesis Engine
+                </label>
+                <div className="grid grid-cols-3 gap-1 bg-black/40 p-1 rounded-xl border border-white/6 text-xs">
+                  {[
+                    { id: 'speak_2_0', label: 'Speak 2.0', badge: 'Flagship' },
+                    { id: 'eleven_v4', label: 'Eleven v4', badge: '10 Voices' },
+                    { id: 'turbo_speech', label: 'Turbo', badge: 'Fast' }
+                  ].map(m => (
+                    <button
+                      key={m.id}
+                      onClick={() => setSelectedAudioModel(m.id)}
+                      className={`py-2 px-1 rounded-lg text-center transition flex flex-col items-center gap-0.5 ${selectedAudioModel === m.id ? 'bg-[#38bdf8] text-black font-bold shadow-sm' : 'text-[#92939e] hover:text-white'}`}
+                    >
+                      <span className="text-xs">{m.label}</span>
+                      <span className={`text-[8px] uppercase tracking-wider font-mono ${selectedAudioModel === m.id ? 'text-black/70' : 'text-[#38bdf8]'}`}>{m.badge}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Voice Roster Library */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-[10px] font-bold text-[#92939e] uppercase tracking-wider">
+                    Voice Roster Presets
+                  </label>
+                  <span className="text-[10px] text-[#38bdf8] font-mono">48 kHz Studio</span>
+                </div>
+
+                <div className="space-y-2">
+                  {AUDIO_VOICE_PRESETS.map(voice => (
+                    <div
+                      key={voice.id}
+                      onClick={() => setActiveAudioSpeaker(voice.id)}
+                      className={`p-2.5 rounded-xl border cursor-pointer transition flex items-center gap-3 ${activeAudioSpeaker === voice.id ? 'bg-[#0284c7]/15 border-[#38bdf8] ring-1 ring-[#38bdf8]/40' : 'bg-white/3 border-white/6 hover:bg-white/6'}`}
+                    >
+                      <img src={voice.avatar} alt={voice.name} className="w-10 h-10 rounded-full object-cover border border-white/10 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs font-bold text-white truncate">{voice.name}</p>
+                          <span className="text-[9px] text-white/50 font-mono">{voice.accent}</span>
+                        </div>
+                        <p className="text-[10px] text-[#38bdf8] font-medium truncate">{voice.role}</p>
+                        <p className="text-[9px] text-[#92939e] truncate">{voice.tone}</p>
+                      </div>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setIsAudioPlaying(!isAudioPlaying); }}
+                        className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white transition shrink-0"
+                      >
+                        <Volume2 className="w-3.5 h-3.5 text-[#38bdf8]" />
+                      </button>
+                    </div>
+                  ))}
+
+                  <div className="border border-dashed border-white/15 hover:border-[#38bdf8]/50 rounded-xl p-2.5 text-center cursor-pointer transition bg-white/2 hover:bg-white/4">
+                    <Mic className="w-3.5 h-3.5 text-white/60 mx-auto mb-1" />
+                    <p className="text-[11px] font-semibold text-white">Clone New Voice</p>
+                    <p className="text-[9px] text-[#92939e]">Upload 10s audio sample (MP3, WAV)</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Acoustic Tuning Sliders */}
+              <div className="space-y-3 pt-2 border-t border-white/8">
+                <div>
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-[10px] font-bold text-[#92939e] uppercase">Stability</span>
+                    <span className="font-mono text-[#38bdf8] text-[11px]">{audioStability}%</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="100" 
+                    value={audioStability} 
+                    onChange={e => setAudioStability(Number(e.target.value))}
+                    className="w-full accent-[#38bdf8] h-1.5 bg-white/10 rounded-lg cursor-pointer"
+                  />
+                  <span className="text-[9px] text-[#92939e] block mt-0.5">Controls emotional range and vocal variation</span>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-[10px] font-bold text-[#92939e] uppercase">Clarity & Similarity</span>
+                    <span className="font-mono text-[#38bdf8] text-[11px]">{audioSimilarity}%</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="100" 
+                    value={audioSimilarity} 
+                    onChange={e => setAudioSimilarity(Number(e.target.value))}
+                    className="w-full accent-[#38bdf8] h-1.5 bg-white/10 rounded-lg cursor-pointer"
+                  />
+                  <span className="text-[9px] text-[#92939e] block mt-0.5">Closeness to original cloned vocal timbre</span>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-[10px] font-bold text-[#92939e] uppercase">Style Exaggeration</span>
+                    <span className="font-mono text-[#38bdf8] text-[11px]">{audioExaggeration}%</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="100" 
+                    value={audioExaggeration} 
+                    onChange={e => setAudioExaggeration(Number(e.target.value))}
+                    className="w-full accent-[#38bdf8] h-1.5 bg-white/10 rounded-lg cursor-pointer"
+                  />
+                  <span className="text-[9px] text-[#92939e] block mt-0.5">Amplifies dramatic inflections and dynamics</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 pt-1">
+                  <div>
+                    <label className="text-[10px] font-bold text-[#92939e] uppercase tracking-wider block mb-1">
+                      Pacing (Speed)
+                    </label>
+                    <select
+                      value={audioSpeed}
+                      onChange={e => setAudioSpeed(Number(e.target.value))}
+                      className="w-full bg-[#18191C] border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-white outline-none"
+                    >
+                      <option value={0.85}>0.85x (Slow/Paced)</option>
+                      <option value={1.0}>1.0x (Natural)</option>
+                      <option value={1.15}>1.15x (Brisk)</option>
+                      <option value={1.3}>1.30x (Dynamic)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-[#92939e] uppercase tracking-wider block mb-1">
+                      Language
+                    </label>
+                    <select
+                      value={audioLanguage}
+                      onChange={e => setAudioLanguage(e.target.value)}
+                      className="w-full bg-[#18191C] border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-white outline-none"
+                    >
+                      <option value="en">English (US/UK)</option>
+                      <option value="pt">Portuguese (BR)</option>
+                      <option value="es">Spanish</option>
+                      <option value="ja">Japanese</option>
+                      <option value="fr">French</option>
+                      <option value="de">German</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          {/* MAIN MULTI-SPEAKER DIALOGUE CANVAS */}
+          <section className="flex-1 flex flex-col overflow-hidden bg-[#0F1113]">
+            {/* Action Top Bar */}
+            <div className="h-12 border-b border-white/8 px-4 flex items-center justify-between bg-[#141518]/80 backdrop-blur-sm z-10">
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-semibold text-white flex items-center gap-1.5">
+                  <Headphones className="w-3.5 h-3.5 text-[#38bdf8]" />
+                  <span>Scene Dialogue Sequence</span>
+                  <span className="text-[#92939e]">({dialogueCards.length} Speakers)</span>
+                </span>
+                <span className="hidden sm:inline-block text-[11px] text-white/50 border border-white/10 bg-white/5 px-2 py-0.5 rounded-full font-mono">
+                  14.1s Total Duration • 48 kHz Master Stereo
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleAddDialogueCard}
+                  className="bg-white/10 hover:bg-white/15 text-white font-semibold text-xs px-3 py-1.5 rounded-xl transition flex items-center gap-1 border border-white/10 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Speaker Card</span>
+                </button>
+
+                <button
+                  onClick={handleAttachAudioToCinema}
+                  className="bg-[#d1fe17] hover:bg-[#b8e212] text-black font-bold text-xs px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+                >
+                  <Film className="w-3.5 h-3.5" />
+                  <span>Attach to Cinema 4.0</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Scrollable Dialogue Cards Container */}
+            <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-4">
+              <div className="max-w-4xl mx-auto space-y-3.5">
+                
+                {dialogueCards.map((card, idx) => {
+                  const assignedVoice = AUDIO_VOICE_PRESETS.find(v => v.id === card.voiceId) || AUDIO_VOICE_PRESETS[0];
+
+                  return (
+                    <div 
+                      key={card.id} 
+                      className="bg-[#18191C] border border-white/10 rounded-2xl p-4 shadow-xl space-y-3 transition hover:border-[#38bdf8]/40 group"
+                    >
+                      {/* Card Header */}
+                      <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
+                        <div className="flex items-center gap-2.5">
+                          <img src={assignedVoice.avatar} alt={assignedVoice.name} className="w-7 h-7 rounded-full object-cover border border-[#38bdf8]" />
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-white">Speaker {card.speakerNumber}:</span>
+                            <select
+                              value={card.voiceId}
+                              onChange={e => handleUpdateCardVoice(card.id, e.target.value)}
+                              className="bg-black/50 border border-white/10 rounded-lg px-2 py-0.5 text-xs text-[#38bdf8] font-semibold outline-none cursor-pointer"
+                            >
+                              {AUDIO_VOICE_PRESETS.map(v => (
+                                <option key={v.id} value={v.id}>{v.name} ({v.role.split(' ')[0]})</option>
+                              ))}
+                            </select>
+                            <span className="text-[10px] text-white/50 font-mono hidden sm:inline">[{assignedVoice.accent}]</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-mono text-[#38bdf8] bg-[#38bdf8]/10 px-2 py-0.5 rounded-md border border-[#38bdf8]/20">
+                            {card.duration}
+                          </span>
+                          <button
+                            onClick={() => handleDeleteDialogueCard(card.id)}
+                            disabled={dialogueCards.length <= 1}
+                            className="p-1 text-white/40 hover:text-red-400 disabled:opacity-20 transition"
+                            title="Delete Card"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Script Input Field */}
+                      <div className="relative">
+                        <textarea
+                          rows={2}
+                          value={card.script}
+                          onChange={e => handleUpdateCardScript(card.id, e.target.value)}
+                          placeholder={`Add dialogue script for ${assignedVoice.name}...`}
+                          className="w-full bg-black/40 border border-white/5 focus:border-[#38bdf8]/50 rounded-xl p-3 text-sm text-white placeholder:text-[#92939e] outline-none resize-none font-sans"
+                        />
+                        <div className="flex items-center justify-between text-[10px] text-[#92939e] mt-1 px-1">
+                          <span>Expressive cadence • Multilingual translation active</span>
+                          <span className="font-mono">{card.script.length} / 2,500 chars</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                <button
+                  onClick={handleAddDialogueCard}
+                  className="w-full py-3.5 rounded-2xl border border-dashed border-white/15 hover:border-[#38bdf8] bg-white/2 hover:bg-[#38bdf8]/5 text-white/60 hover:text-white transition flex items-center justify-center gap-2 text-xs font-semibold cursor-pointer"
+                >
+                  <Plus className="w-4 h-4 text-[#38bdf8]" />
+                  <span>Add Next Speaker Dialogue Card (Up to 1,000 Cards)</span>
+                </button>
+
+              </div>
+            </div>
+
+            {/* Bottom Master Waveform Player Dock */}
+            <div className="p-4 pt-1 pb-4 shrink-0 z-30">
+              <div className="max-w-4xl mx-auto rounded-2xl border border-[#38bdf8]/30 bg-[#18191C]/95 backdrop-blur-xl p-3 shadow-[0_12px_40px_rgba(0,0,0,0.6)] space-y-3">
+                
+                {/* Waveform Visualizer */}
+                <div className="bg-black/60 rounded-xl p-3 border border-white/5 flex items-center gap-3">
+                  <button 
+                    onClick={() => setIsAudioPlaying(!isAudioPlaying)}
+                    className="w-10 h-10 rounded-full bg-[#38bdf8] text-black flex items-center justify-center hover:scale-105 transition shrink-0 shadow-[0_0_12px_rgba(56,189,248,0.4)] cursor-pointer"
+                  >
+                    {isAudioPlaying ? <Pause className="w-4 h-4 fill-black" /> : <Play className="w-4 h-4 fill-black ml-0.5" />}
+                  </button>
+
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center justify-between text-[11px] font-mono">
+                      <span className="text-[#38bdf8] font-bold">00:04.8 / 00:14.1</span>
+                      <span className="text-white/50">Higgsfield Speak 2.0 • 48 kHz Master</span>
+                    </div>
+
+                    {/* Simulated Waveform Bars */}
+                    <div className="h-6 flex items-center gap-1 cursor-pointer">
+                      {[35, 60, 80, 45, 90, 70, 30, 85, 100, 65, 40, 55, 95, 75, 50, 85, 40, 60, 70, 90, 30, 80, 65, 45, 85, 95, 40, 60, 50, 75, 90, 35, 60, 80, 50, 70, 95, 40, 85, 60].map((h, i) => (
+                        <div 
+                          key={i} 
+                          style={{ height: `${h}%` }}
+                          className={`flex-1 rounded-full transition-all ${i < 15 ? 'bg-[#38bdf8]' : 'bg-white/20 hover:bg-white/40'}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom Trigger Bar */}
+                <div className="flex items-center justify-between text-xs pt-1">
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#38bdf8]/15 border border-[#38bdf8]/30 text-xs text-[#38bdf8] font-bold">
+                      <Mic className="w-3 h-3" />
+                      {selectedAudioModel === 'speak_2_0' ? 'Speak 2.0' : selectedAudioModel === 'eleven_v4' ? 'Eleven v4' : 'Turbo Speech'}
+                    </span>
+
+                    <button 
+                      onClick={() => copyText(dialogueCards.map(c => `${c.speakerName}: ${c.script}`).join('\n'))}
+                      className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/8 transition flex items-center gap-1 cursor-pointer"
+                      title="Copy full dialogue script"
+                    >
+                      <Copy className="w-3 h-3" />
+                      <span>Copy Script</span>
+                    </button>
+                  </div>
+
+                  <button 
+                    onClick={handleGenerateAudio}
+                    disabled={isAudioGenerating}
+                    className="bg-[#38bdf8] hover:bg-[#0284c7] hover:text-white disabled:opacity-50 text-black px-5 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 transition shadow-[0_4px_16px_rgba(56,189,248,0.35)] cursor-pointer"
+                  >
+                    {isAudioGenerating ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Synthesizing Audio...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-3.5 h-3.5 fill-black" /> Synthesize Dialogue • 10 credits
                       </>
                     )}
                   </button>
