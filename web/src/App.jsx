@@ -6,8 +6,10 @@ import {
   ChevronDown, ExternalLink, Info, CheckCircle2, Clapperboard, Palette, Share2, 
   Eye, Download, Maximize2, Plus, Search, Heart, Folder, Home, Grid, 
   SlidersHorizontal, Camera, Clock, MoveHorizontal, Disc, SlidersVertical,
-  Scissors, ArrowRight, CornerDownRight
+  Scissors, ArrowRight, CornerDownRight, Split, Flame, FastForward, Activity,
+  Repeat, UserCheck
 } from 'lucide-react';
+
 
 const FEATURED_CAROUSEL = [
   {
@@ -97,10 +99,126 @@ const VIRAL_EFFECTS = [
   }
 ];
 
+const GENJUTSU_MOTION_PRESETS = [
+  {
+    id: "katana_strike",
+    title: "Cyber Katana Strike",
+    category: "Action & Martial Arts",
+    videoUrl: "https://static-public-media.higgsfield.ai/cards/c94a765b-8ad6-4af3-b884-88ea306d79ff.mp4",
+    thumb: "https://static-public-media.higgsfield.ai/cards/33b14c34-2394-4580-9b88-16b5e6695528.webp",
+    fps: "30 FPS",
+    duration: "5s",
+    description: "Dynamic blade unsheathe with 180° body rotation and impact pause"
+  },
+  {
+    id: "parkour_flip",
+    title: "Rooftop High Flip",
+    category: "Parkour & Acrobatics",
+    videoUrl: "https://static-public-media.higgsfield.ai/cards/47326e54-4048-4cac-bd7e-600b88e10427.mp4",
+    thumb: "https://cdn.higgsfield.ai/viral_hub/95cd0d73-4f3c-40d1-ac0b-c8668a99440b.webp",
+    fps: "60 FPS",
+    duration: "4s",
+    description: "Inverted high backflip with rotational airtime and crouch recovery"
+  },
+  {
+    id: "runway_strut",
+    title: "High-Fashion Runway Walk",
+    category: "Editorial & Modeling",
+    videoUrl: "https://static.higgsfield.ai/promotions/seedance_2_5_explore_image.mp4",
+    thumb: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80",
+    fps: "24 FPS",
+    duration: "6s",
+    description: "Paced confident runway walk toward lens with subtle coat flare"
+  },
+  {
+    id: "kpop_sync",
+    title: "K-Pop Synchronized Routine",
+    category: "Dance & Choreography",
+    videoUrl: "https://static-public-media.higgsfield.ai/cards/47326e54-4048-4cac-bd7e-600b88e10427.mp4",
+    thumb: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80",
+    fps: "30 FPS",
+    duration: "8s",
+    description: "Upper-body arm wave, snappy chest isolation and rhythmic turn"
+  }
+];
+
+const GENJUTSU_CHARACTER_PRESETS = [
+  {
+    id: "aria_nomad",
+    name: "Aria (Cyber Nomad)",
+    style: "35mm Photorealistic Raw",
+    imgUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80",
+    badge: "Soul #884"
+  },
+  {
+    id: "ren_shinobi",
+    name: "Ren (Anime Shinobi)",
+    style: "Cel-Shaded Anime 2.0",
+    imgUrl: "https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=800&q=80",
+    badge: "Soul #102"
+  },
+  {
+    id: "elena_muse",
+    name: "Elena (Vogue Editorial)",
+    style: "High-Fashion 85mm Prime",
+    imgUrl: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80",
+    badge: "Soul #331"
+  },
+  {
+    id: "kael_exo",
+    name: "Kael (Sci-Fi Exo Pilot)",
+    style: "Unreal 5 Cinematic CGI",
+    imgUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80",
+    badge: "Soul #919"
+  }
+];
+
 export default function App() {
-  const [activeTab, setActiveTab] = useState('explore'); // 'explore' | 'video' | 'image' | 'mcp'
+  const [activeTab, setActiveTab] = useState('explore'); // 'explore' | 'video' | 'image' | 'genjutsu' | 'mcp'
   const [copied, setCopied] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // ==========================================
+  // GENJUTSU (MOTION TRANSFER) STATE
+  // ==========================================
+  const [genjutsuMode, setGenjutsuMode] = useState('motion_transfer'); // 'motion_transfer' | 'recast' | 'restyle' | 'object_swap'
+  const [selectedMotionId, setSelectedMotionId] = useState('katana_strike');
+  const [selectedCharacterId, setSelectedCharacterId] = useState('aria_nomad');
+  const [characterOrientation, setCharacterOrientation] = useState('match_video'); // 'match_video' | 'match_image'
+  const [motionDynamicScale, setMotionDynamicScale] = useState('balanced'); // 'balanced' | 'high_dynamic'
+  const [genjutsuAspect, setGenjutsuAspect] = useState('9:16');
+  const [genjutsuDuration, setGenjutsuDuration] = useState('5s');
+  const [genjutsuPrompt, setGenjutsuPrompt] = useState('Transfer dynamic combat motion, maintain photorealistic skin textures, cinematic lighting and kinetic wind physics');
+  const [isGenjutsuGenerating, setIsGenjutsuGenerating] = useState(false);
+  const [genjutsuViewMode, setGenjutsuViewMode] = useState('side_by_side'); // 'side_by_side' | 'split' | 'result'
+  const [isGenjutsuPlaying, setIsGenjutsuPlaying] = useState(true);
+  const motionVideoRef = useRef(null);
+  const outputVideoRef = useRef(null);
+
+  const activeMotion = GENJUTSU_MOTION_PRESETS.find(m => m.id === selectedMotionId) || GENJUTSU_MOTION_PRESETS[0];
+  const activeCharacter = GENJUTSU_CHARACTER_PRESETS.find(c => c.id === selectedCharacterId) || GENJUTSU_CHARACTER_PRESETS[0];
+
+  // URL sync for ?model=genjutsu or /ai/video?model=genjutsu
+  useEffect(() => {
+    try {
+      const search = window.location.search;
+      const params = new URLSearchParams(search);
+      const pathname = window.location.pathname;
+      if (params.get('model') === 'genjutsu' || pathname.includes('genjutsu')) {
+        setActiveTab('genjutsu');
+      }
+    } catch(e) {}
+  }, []);
+
+  const navigateToGenjutsu = () => {
+    setActiveTab('genjutsu');
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('model', 'genjutsu');
+      window.history.pushState({}, '', url.toString());
+    } catch(e) {}
+  };
+
 
   // ==========================================
   // CINEMA STUDIO (VIDEO) STATE
@@ -275,6 +393,46 @@ export default function App() {
     setActiveTab('video');
   };
 
+  // Genjutsu Actions
+  const handleGenerateGenjutsu = () => {
+    setIsGenjutsuGenerating(true);
+    setTimeout(() => {
+      setIsGenjutsuGenerating(false);
+    }, 2500);
+  };
+
+  const handleSyncPlayToggle = () => {
+    const nextPlay = !isGenjutsuPlaying;
+    setIsGenjutsuPlaying(nextPlay);
+    if (motionVideoRef.current) {
+      if (nextPlay) motionVideoRef.current.play(); else motionVideoRef.current.pause();
+    }
+    if (outputVideoRef.current) {
+      if (nextPlay) outputVideoRef.current.play(); else outputVideoRef.current.pause();
+    }
+  };
+
+  const handleSendGenjutsuToCinema = () => {
+    const newId = "shot_genjutsu_" + Date.now();
+    const newShot = {
+      id: newId,
+      name: `Genjutsu: ${activeMotion.title} ➔ ${activeCharacter.name}`,
+      model: "genjutsu",
+      camera: "Motion Transfer 30fps",
+      aspect: genjutsuAspect,
+      duration: genjutsuDuration,
+      videoUrl: activeMotion.videoUrl,
+      thumb: activeCharacter.imgUrl,
+      prompt: genjutsuPrompt
+    };
+    setShots(prev => [newShot, ...prev]);
+    setActiveShotId(newId);
+    setVideoPrompt(genjutsuPrompt);
+    setSelectedVideoModel('genjutsu');
+    setActiveTab('video');
+  };
+
+
   const openInStudio = (presetPrompt, presetModel = 'seedance_2_5', presetVideo = null) => {
     setVideoPrompt(presetPrompt);
     setSelectedVideoModel(presetModel);
@@ -360,6 +518,13 @@ export default function App() {
               className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${activeTab === 'image' ? 'bg-[#ff5c00] text-white shadow-sm' : 'text-[#92939e] hover:text-white'}`}
             >
               <ImageIcon className="w-3.5 h-3.5" /> Image Studio
+            </button>
+            <button 
+              onClick={navigateToGenjutsu}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${activeTab === 'genjutsu' ? 'bg-gradient-to-r from-[#9333ea] to-[#ec4899] text-white shadow-[0_0_12px_rgba(236,72,153,0.35)]' : 'text-[#92939e] hover:text-white'}`}
+            >
+              <Zap className="w-3.5 h-3.5 text-[#f472b6]" /> Genjutsu
+              <span className="text-[9px] bg-white/20 text-white px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">top</span>
             </button>
             <button 
               onClick={() => setActiveTab('mcp')}
@@ -490,7 +655,7 @@ export default function App() {
               {[
                 { name: "Seedance 2.5", sub: "The most advanced video model", tag: "TOP", icon: "https://static.higgsfield.ai/explore/image-generate-block/seedance-logo.png", action: () => openInStudio('Seedance 2.5 video', 'seedance_2_5') },
                 { name: "Nano Banana Pro", sub: "Flagship ultra-sharp images", tag: "IMAGE", icon: "sparkles", action: () => setActiveTab('image') },
-                { name: "Higgsfield Genjutsu", sub: "One video, many versions", tag: "NEW", icon: "wand", action: () => openInStudio('Genjutsu reality swap', 'genjutsu') },
+                { name: "Higgsfield Genjutsu", sub: "Motion Transfer & Recast", tag: "TOP", icon: "wand", action: navigateToGenjutsu },
                 { name: "GPT Image 2.5", sub: "Graphic design & crisp text", tag: "IMAGE", icon: "image", action: () => setActiveTab('image') },
                 { name: "Cinema Studio 4.0", sub: "Create cinematic scenes effortlessly", tag: null, icon: "https://static.higgsfield.ai/explore/image-generate-block/cinema-studio.png", action: () => setActiveTab('video') },
                 { name: "Supercomputer", sub: "Agent powered by GPT-6 Astra", tag: null, icon: "https://static.higgsfield.ai/explore/image-generate-block/supercomputer-card-icon.svg", action: () => openInStudio('Supercomputer autonomous agent') }
@@ -1303,8 +1468,482 @@ export default function App() {
       )}
 
       {/* =========================================================================
-          VIEW 4: MCP CONSOLE
+          VIEW 3.5: GENJUTSU MOTION TRANSFER & RECAST STUDIO (/ai/video?model=genjutsu)
           ========================================================================= */}
+      {activeTab === 'genjutsu' && (
+        <div className="flex-1 flex overflow-hidden">
+          
+          {/* LEFT CONTROL SIDEBAR: MOTION DRIVER & TARGET SUBJECT */}
+          <aside className="w-[340px] shrink-0 border-r border-white/8 bg-[#121316] flex flex-col overflow-y-auto">
+            {/* Header Badge */}
+            <div className="p-4 border-b border-white/8 flex items-center justify-between bg-gradient-to-r from-[#9333ea]/15 to-[#ec4899]/15">
+              <div className="flex items-center gap-2">
+                <span className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#9333ea] to-[#ec4899] flex items-center justify-center text-white shadow-[0_0_12px_rgba(236,72,153,0.4)]">
+                  <Zap className="w-4 h-4 fill-white" />
+                </span>
+                <div>
+                  <h3 className="font-bold text-sm text-white flex items-center gap-1.5">
+                    Higgsfield Genjutsu
+                    <span className="text-[9px] bg-[#ec4899]/30 text-[#f472b6] border border-[#ec4899]/50 px-1 rounded uppercase font-bold">2.0</span>
+                  </h3>
+                  <p className="text-[11px] text-[#92939e]">Motion Transfer & Recast Engine</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 space-y-5">
+              {/* 4 Genjutsu Modes */}
+              <div>
+                <label className="text-[10px] font-bold text-[#92939e] uppercase tracking-wider block mb-2">
+                  Genjutsu Engine Mode
+                </label>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {[
+                    { id: 'motion_transfer', label: 'Motion Transfer', icon: Zap, desc: 'Image + Motion Driver' },
+                    { id: 'recast', label: 'Recast / Swap', icon: UserCheck, desc: 'Keep Motion, Swap Subject' },
+                    { id: 'restyle', label: 'Restyle Redraw', icon: Palette, desc: 'Anime / CGI Video Redraw' },
+                    { id: 'object_swap', label: 'Object Swap', icon: Repeat, desc: 'Swap Items or Clothes' },
+                  ].map(mode => (
+                    <button
+                      key={mode.id}
+                      onClick={() => setGenjutsuMode(mode.id)}
+                      className={`p-2.5 rounded-xl border text-left transition flex flex-col gap-1 ${genjutsuMode === mode.id ? 'bg-[#9333ea]/20 border-[#ec4899] text-white shadow-[0_0_12px_rgba(236,72,153,0.2)]' : 'bg-white/3 border-white/6 hover:bg-white/6 text-white/70'}`}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <mode.icon className={`w-3.5 h-3.5 ${genjutsuMode === mode.id ? 'text-[#ec4899]' : 'text-white/50'}`} />
+                        <span className="text-xs font-bold leading-tight">{mode.label}</span>
+                      </div>
+                      <span className="text-[9px] text-[#92939e]">{mode.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Step 1: Motion Driver Selection */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-[10px] font-bold text-[#92939e] uppercase tracking-wider">
+                    1. Motion Driver (Reference Video)
+                  </label>
+                  <span className="text-[10px] text-[#ec4899] font-mono">{activeMotion.fps}</span>
+                </div>
+                
+                <div className="space-y-2">
+                  {GENJUTSU_MOTION_PRESETS.map(preset => (
+                    <div
+                      key={preset.id}
+                      onClick={() => setSelectedMotionId(preset.id)}
+                      className={`p-2 rounded-xl border cursor-pointer transition flex items-center gap-2.5 ${selectedMotionId === preset.id ? 'bg-[#9333ea]/15 border-[#a855f7] ring-1 ring-[#a855f7]/40' : 'bg-white/3 border-white/6 hover:bg-white/6'}`}
+                    >
+                      <div className="relative w-14 h-11 rounded-lg overflow-hidden shrink-0 bg-black">
+                        <img src={preset.thumb} alt={preset.title} className="w-full h-full object-cover" />
+                        <span className="absolute bottom-0.5 right-0.5 bg-black/80 px-1 rounded text-[8px] font-mono text-white">
+                          {preset.duration}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs font-bold text-white truncate">{preset.title}</p>
+                          <span className="text-[9px] text-white/50 font-mono">{preset.fps}</span>
+                        </div>
+                        <p className="text-[10px] text-[#92939e] truncate">{preset.description}</p>
+                      </div>
+                    </div>
+                  ))}
+
+                  <div className="border border-dashed border-white/15 hover:border-[#ec4899]/50 rounded-xl p-2.5 text-center cursor-pointer transition bg-white/2 hover:bg-white/4">
+                    <Upload className="w-3.5 h-3.5 text-white/60 mx-auto mb-1" />
+                    <p className="text-[11px] font-semibold text-white">Upload Custom Motion Clip</p>
+                    <p className="text-[9px] text-[#92939e]">Supports MP4, MOV up to 30s (Max 50MB)</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 2: Target Character / Subject */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-[10px] font-bold text-[#92939e] uppercase tracking-wider">
+                    2. Target Subject (Character Image)
+                  </label>
+                  <span className="text-[10px] text-[#4ade80] font-mono">{activeCharacter.badge}</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  {GENJUTSU_CHARACTER_PRESETS.map(char => (
+                    <div
+                      key={char.id}
+                      onClick={() => setSelectedCharacterId(char.id)}
+                      className={`p-2 rounded-xl border cursor-pointer transition flex flex-col gap-1.5 ${selectedCharacterId === char.id ? 'bg-[#9333ea]/15 border-[#ec4899] ring-1 ring-[#ec4899]/40' : 'bg-white/3 border-white/6 hover:bg-white/6'}`}
+                    >
+                      <div className="aspect-square w-full rounded-lg overflow-hidden bg-black relative">
+                        <img src={char.imgUrl} alt={char.name} className="w-full h-full object-cover" />
+                        <span className="absolute bottom-1 left-1 bg-black/80 px-1 rounded text-[8px] font-mono text-[#f472b6]">
+                          {char.badge}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-white truncate">{char.name}</p>
+                        <p className="text-[9px] text-[#92939e] truncate">{char.style}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-2 border border-dashed border-white/15 hover:border-[#a855f7]/50 rounded-xl p-2.5 text-center cursor-pointer transition bg-white/2 hover:bg-white/4">
+                  <ImageIcon className="w-3.5 h-3.5 text-white/60 mx-auto mb-1" />
+                  <p className="text-[11px] font-semibold text-white">Upload New Soul / Character</p>
+                  <p className="text-[9px] text-[#92939e]">JPG, PNG, WebP with clear facial details</p>
+                </div>
+              </div>
+
+              {/* Step 3: Engine Fine-Tuning */}
+              <div className="space-y-3 pt-2 border-t border-white/8">
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-[10px] font-bold text-[#92939e] uppercase tracking-wider flex items-center gap-1">
+                      Character Orientation
+                      <Info className="w-3 h-3 text-white/40" />
+                    </label>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5 bg-black/40 p-1 rounded-xl border border-white/6">
+                    <button
+                      onClick={() => setCharacterOrientation('match_video')}
+                      className={`py-1.5 px-2 rounded-lg text-xs font-semibold transition ${characterOrientation === 'match_video' ? 'bg-[#9333ea] text-white shadow' : 'text-[#92939e] hover:text-white'}`}
+                    >
+                      Match Video
+                    </button>
+                    <button
+                      onClick={() => setCharacterOrientation('match_image')}
+                      className={`py-1.5 px-2 rounded-lg text-xs font-semibold transition ${characterOrientation === 'match_image' ? 'bg-[#9333ea] text-white shadow' : 'text-[#92939e] hover:text-white'}`}
+                    >
+                      Match Image
+                    </button>
+                  </div>
+                  <p className="text-[9px] text-[#92939e] mt-1 leading-tight">
+                    {characterOrientation === 'match_video' 
+                      ? "Matches body trajectory and limb mechanics for fast choreography." 
+                      : "Preserves initial framing and facial geometry against motion warp."}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold text-[#92939e] uppercase tracking-wider block mb-1.5">
+                    Motion Dynamic Scale
+                  </label>
+                  <div className="grid grid-cols-2 gap-1.5 bg-black/40 p-1 rounded-xl border border-white/6">
+                    <button
+                      onClick={() => setMotionDynamicScale('balanced')}
+                      className={`py-1.5 px-2 rounded-lg text-xs font-semibold transition ${motionDynamicScale === 'balanced' ? 'bg-[#a855f7] text-white shadow' : 'text-[#92939e] hover:text-white'}`}
+                    >
+                      Balanced (1x)
+                    </button>
+                    <button
+                      onClick={() => setMotionDynamicScale('high_dynamic')}
+                      className={`py-1.5 px-2 rounded-lg text-xs font-semibold transition ${motionDynamicScale === 'high_dynamic' ? 'bg-[#ec4899] text-white shadow' : 'text-[#92939e] hover:text-white'}`}
+                    >
+                      Kinetic (1.5x)
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] font-bold text-[#92939e] uppercase tracking-wider block mb-1.5">
+                      Aspect Ratio
+                    </label>
+                    <select
+                      value={genjutsuAspect}
+                      onChange={e => setGenjutsuAspect(e.target.value)}
+                      className="w-full bg-[#18191C] border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-white outline-none"
+                    >
+                      <option value="9:16">9:16 (Stories/Reels)</option>
+                      <option value="16:9">16:9 (Cinema)</option>
+                      <option value="1:1">1:1 (Square)</option>
+                      <option value="4:5">4:5 (Portrait Feed)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-[#92939e] uppercase tracking-wider block mb-1.5">
+                      Clip Duration
+                    </label>
+                    <select
+                      value={genjutsuDuration}
+                      onChange={e => setGenjutsuDuration(e.target.value)}
+                      className="w-full bg-[#18191C] border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-white outline-none"
+                    >
+                      <option value="3s">3 seconds</option>
+                      <option value="5s">5 seconds (Optimal)</option>
+                      <option value="8s">8 seconds</option>
+                      <option value="15s">15 seconds (Extended)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          {/* MAIN DUAL VIEWPORT & MOTION WORKSPACE */}
+          <section className="flex-1 flex flex-col overflow-hidden bg-[#0F1113]">
+            {/* Viewport Action Bar */}
+            <div className="h-12 border-b border-white/8 px-4 flex items-center justify-between bg-[#141518]/80 backdrop-blur-sm z-10">
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-semibold text-white flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5 text-[#ec4899]" />
+                  <span>{activeMotion.title}</span>
+                  <span className="text-[#92939e]">➔</span>
+                  <span className="text-[#f472b6] font-bold">{activeCharacter.name}</span>
+                </span>
+                <span className="hidden sm:inline-block text-[11px] text-white/50 border border-white/10 bg-white/5 px-2 py-0.5 rounded-full font-mono">
+                  1080p • {activeMotion.fps} • Temporal Lock ON
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {/* View Mode Switcher */}
+                <div className="flex items-center bg-black/40 p-1 rounded-xl border border-white/6 text-xs">
+                  <button
+                    onClick={() => setGenjutsuViewMode('side_by_side')}
+                    className={`px-2.5 py-1 rounded-lg font-medium transition ${genjutsuViewMode === 'side_by_side' ? 'bg-white/15 text-white' : 'text-[#92939e] hover:text-white'}`}
+                  >
+                    Side-by-Side
+                  </button>
+                  <button
+                    onClick={() => setGenjutsuViewMode('split')}
+                    className={`px-2.5 py-1 rounded-lg font-medium transition ${genjutsuViewMode === 'split' ? 'bg-white/15 text-white' : 'text-[#92939e] hover:text-white'}`}
+                  >
+                    Split View
+                  </button>
+                  <button
+                    onClick={() => setGenjutsuViewMode('result')}
+                    className={`px-2.5 py-1 rounded-lg font-medium transition ${genjutsuViewMode === 'result' ? 'bg-white/15 text-white' : 'text-[#92939e] hover:text-white'}`}
+                  >
+                    Result Only
+                  </button>
+                </div>
+
+                {/* Send to Cinema Studio Bridge */}
+                <button
+                  onClick={handleSendGenjutsuToCinema}
+                  className="bg-[#d1fe17] hover:bg-[#b8e212] text-black font-bold text-xs px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+                >
+                  <Film className="w-3.5 h-3.5" />
+                  <span>Open in Cinema 4.0</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Central Viewport Stage */}
+            <div className="flex-1 p-4 lg:p-6 flex items-center justify-center overflow-hidden">
+              <div className="w-full max-w-5xl h-full flex flex-col items-center justify-center">
+                
+                {/* Side-by-Side Mode */}
+                {genjutsuViewMode === 'side_by_side' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full h-[460px] max-h-[70vh]">
+                    
+                    {/* Motion Driver Source */}
+                    <div className="relative rounded-2xl overflow-hidden bg-black border border-white/10 flex flex-col shadow-2xl group">
+                      <div className="absolute top-3 left-3 z-20 flex items-center gap-2">
+                        <span className="bg-black/80 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-bold text-white uppercase tracking-wider border border-white/10 flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-[#3b82f6] animate-pulse" />
+                          Motion Driver (Source)
+                        </span>
+                        <span className="bg-black/60 px-2 py-0.5 rounded text-[9px] font-mono text-white/70">
+                          {activeMotion.fps}
+                        </span>
+                      </div>
+
+                      <video 
+                        ref={motionVideoRef}
+                        src={activeMotion.videoUrl} 
+                        className="w-full h-full object-cover" 
+                        loop 
+                        autoPlay 
+                        muted 
+                        playsInline
+                      />
+
+                      <div className="absolute bottom-3 inset-x-3 z-20 flex items-center justify-between bg-black/60 backdrop-blur-md p-2 rounded-xl border border-white/10">
+                        <span className="text-[11px] text-white font-medium truncate">{activeMotion.title}</span>
+                        <span className="text-[10px] text-[#92939e] font-mono">{activeMotion.duration}</span>
+                      </div>
+                    </div>
+
+                    {/* Genjutsu Synthesized Result */}
+                    <div className="relative rounded-2xl overflow-hidden bg-black border border-[#ec4899]/40 flex flex-col shadow-[0_0_30px_rgba(236,72,153,0.15)] group">
+                      <div className="absolute top-3 left-3 z-20 flex items-center gap-2">
+                        <span className="bg-gradient-to-r from-[#9333ea] to-[#ec4899] px-2.5 py-1 rounded-lg text-[10px] font-bold text-white uppercase tracking-wider border border-white/20 shadow-md flex items-center gap-1.5">
+                          <Zap className="w-3 h-3 fill-white" />
+                          Genjutsu 2.0 Output
+                        </span>
+                        <span className="bg-black/60 px-2 py-0.5 rounded text-[9px] font-mono text-[#f472b6]">
+                          Matched
+                        </span>
+                      </div>
+
+                      <div className="absolute top-3 right-3 z-20">
+                        <span className="bg-black/80 px-2.5 py-1 rounded-lg text-[10px] font-mono text-[#d1fe17] border border-white/10">
+                          1080p Cinema
+                        </span>
+                      </div>
+
+                      {/* Video Output / Animated Canvas */}
+                      <video 
+                        ref={outputVideoRef}
+                        src={activeMotion.videoUrl} 
+                        className="w-full h-full object-cover filter contrast-105 saturate-110" 
+                        loop 
+                        autoPlay 
+                        muted 
+                        playsInline
+                      />
+
+                      {/* Overlay Character Tag & Controls */}
+                      <div className="absolute bottom-3 inset-x-3 z-20 flex items-center justify-between bg-black/70 backdrop-blur-md p-2.5 rounded-xl border border-white/15">
+                        <div className="flex items-center gap-2">
+                          <img src={activeCharacter.imgUrl} alt={activeCharacter.name} className="w-7 h-7 rounded-lg object-cover border border-[#ec4899]" />
+                          <div>
+                            <p className="text-[11px] font-bold text-white leading-none">{activeCharacter.name}</p>
+                            <p className="text-[9px] text-[#f472b6]">{characterOrientation === 'match_video' ? 'Kinetic Trajectory' : 'Framing Locked'}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          <button 
+                            onClick={handleSyncPlayToggle}
+                            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
+                          >
+                            {isGenjutsuPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                          </button>
+                          <button 
+                            onClick={() => copyText(genjutsuPrompt)}
+                            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
+                            title="Copy Prompt"
+                          >
+                            <Copy className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+
+                    </div>
+
+                  </div>
+                )}
+
+                {/* Split Screen Mode */}
+                {genjutsuViewMode === 'split' && (
+                  <div className="relative w-full max-w-2xl h-[480px] rounded-2xl overflow-hidden border border-[#ec4899]/30 bg-black shadow-2xl">
+                    <video 
+                      src={activeMotion.videoUrl} 
+                      className="w-full h-full object-cover" 
+                      loop 
+                      autoPlay 
+                      muted 
+                      playsInline
+                    />
+                    <div className="absolute inset-y-0 left-1/2 w-0.5 bg-[#ec4899] shadow-[0_0_12px_#ec4899] z-20">
+                      <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-[#ec4899] text-white flex items-center justify-center shadow-lg">
+                        <Split className="w-3.5 h-3.5" />
+                      </div>
+                    </div>
+                    <span className="absolute top-4 left-4 bg-black/80 px-2.5 py-1 rounded-lg text-xs font-bold text-white uppercase border border-white/10">
+                      Driver: {activeMotion.title}
+                    </span>
+                    <span className="absolute top-4 right-4 bg-gradient-to-r from-[#9333ea] to-[#ec4899] px-2.5 py-1 rounded-lg text-xs font-bold text-white uppercase border border-white/20">
+                      Target: {activeCharacter.name}
+                    </span>
+                  </div>
+                )}
+
+                {/* Result Only Mode */}
+                {genjutsuViewMode === 'result' && (
+                  <div className="relative w-full max-w-2xl h-[480px] rounded-2xl overflow-hidden border border-[#ec4899]/40 bg-black shadow-2xl">
+                    <video 
+                      src={activeMotion.videoUrl} 
+                      className="w-full h-full object-cover filter contrast-105 saturate-110" 
+                      loop 
+                      autoPlay 
+                      muted 
+                      playsInline
+                    />
+                    <div className="absolute top-4 left-4 bg-gradient-to-r from-[#9333ea] to-[#ec4899] px-3 py-1.5 rounded-xl text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5 shadow-lg border border-white/20">
+                      <Zap className="w-3.5 h-3.5 fill-white" />
+                      {activeCharacter.name} • Full Frame
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </div>
+
+            {/* Floating Genjutsu Prompt Dock */}
+            <div className="p-4 pt-1 pb-4 shrink-0 z-30">
+              <div className="max-w-4xl mx-auto rounded-2xl border border-[#ec4899]/30 bg-[#18191C]/95 backdrop-blur-xl p-3 shadow-[0_12px_40px_rgba(0,0,0,0.6)] space-y-2">
+                
+                <div className="flex items-center gap-2">
+                  <textarea 
+                    rows={1}
+                    value={genjutsuPrompt}
+                    onChange={e => setGenjutsuPrompt(e.target.value)}
+                    placeholder="Direct character performance, expressions, lighting, style and physical motion reactions..."
+                    className="flex-1 bg-transparent border-none text-white text-sm outline-none resize-none placeholder:text-[#92939e] font-sans px-2"
+                  />
+                  <button 
+                    onClick={() => setGenjutsuPrompt(prev => prev + ", cinematic volumetric fog, 35mm anamorphic lens flare, photorealistic skin textures")}
+                    className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-[#f472b6] hover:text-white transition shrink-0 flex items-center gap-1 text-xs font-semibold cursor-pointer"
+                    title="Enhance prompt with cinematic motion keywords"
+                  >
+                    <Wand2 className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Enhance</span>
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between pt-1 border-t border-white/8 text-xs">
+                  <div className="flex items-center gap-2 overflow-x-auto">
+                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-r from-[#9333ea]/30 to-[#ec4899]/30 border border-[#ec4899]/40 text-xs text-white font-bold">
+                      <Zap className="w-3 h-3 text-[#f472b6]" />
+                      Higgsfield Genjutsu 2.0
+                    </span>
+
+                    <span className="px-2 py-1 rounded-lg bg-white/5 border border-white/8 text-[11px] text-[#f472b6] font-mono">
+                      @{activeCharacter.name.split(' ')[0]}
+                    </span>
+                    <span className="px-2 py-1 rounded-lg bg-white/5 border border-white/8 text-[11px] text-[#60a5fa] font-mono">
+                      @{activeMotion.title.split(' ')[0]}
+                    </span>
+                    <span className="px-2 py-1 rounded-lg bg-white/5 border border-white/8 text-[11px] text-white/70 font-mono">
+                      {genjutsuAspect}
+                    </span>
+                    <span className="px-2 py-1 rounded-lg bg-white/5 border border-white/8 text-[11px] text-white/70 font-mono">
+                      {genjutsuDuration}
+                    </span>
+                  </div>
+
+                  <button 
+                    onClick={handleGenerateGenjutsu}
+                    disabled={isGenjutsuGenerating}
+                    className="bg-gradient-to-r from-[#9333ea] to-[#ec4899] hover:from-[#a855f7] hover:to-[#f43f5e] disabled:opacity-50 text-white px-5 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 transition shadow-[0_4px_16px_rgba(236,72,153,0.35)] cursor-pointer"
+                  >
+                    {isGenjutsuGenerating ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Transferring Motion...
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-3.5 h-3.5 fill-white" /> Transfer Motion • 15 credits
+                      </>
+                    )}
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+          </section>
+
+        </div>
+      )}
+
       {activeTab === 'mcp' && (
         <main className="flex-1 overflow-y-auto px-4 lg:px-6 py-6 space-y-6 max-w-7xl mx-auto w-full">
           <div className="space-y-2">

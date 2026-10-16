@@ -22,6 +22,21 @@ MODELS: Dict[str, Dict[str, Any]] = {
         "allowed_resolutions": ["720p", "1080p"],
         "allowed_durations": [5, 10]
     },
+    "genjutsu": {
+        "name": "Higgsfield Genjutsu",
+        "type": "video",
+        "description": "Motion Transfer, Character Swap & Recast engine. Transfers action, choreography, physics, and camera motion from video references onto images or characters.",
+        "defaults": {
+            "mode": "motion_transfer",
+            "aspect_ratio": "9:16",
+            "duration": 5,
+            "character_orientation": "match_video",
+            "motion_fidelity": "high"
+        },
+        "allowed_modes": ["motion_transfer", "character_swap", "restyle", "object_swap"],
+        "allowed_aspect_ratios": ["9:16", "16:9", "1:1", "4:5"],
+        "allowed_durations": [3, 5, 8, 15, 30]
+    },
     "seedance_2_0": {
         "name": "Seedance 2.0",
         "type": "video",
