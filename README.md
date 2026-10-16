@@ -1,48 +1,37 @@
-# Higgsfield AI — Reconstructed Suite & MCP Server
+# Higgsfield AI — Reconstructed Suite, Web Studio & MCP Server
 
-Implementação limpa e completa do ecossistema **Higgsfield AI**, recriada e validada através de engenharia reversa estática com o **MCP REA** (*Reverse Engineer Anything*).
+Implementação limpa e completa do ecossistema **Higgsfield AI**, recriada e validada através de engenharia reversa com o **MCP REA** (*Reverse Engineer Anything*) e análise estática da plataforma oficial.
 
-Inclui o **Servidor MCP Oficial stdio** para conectar no Antigravity, Claude Code, Cursor ou Claude Desktop, SDK completo em Python, CLI compatível com `hf` e motor de prompts clean-room de 5 segundos.
-
----
-
-## 🚀 Funcionalidades
-
-- **Servidor MCP (`src/mcp_server.py`):**
-  - `higgsfield_generate_video`: Geração cinematográfica via **Seedance 2.5**, **Seedance 2.0**, **Kling 3.0**, **Veo 3.1**, **Gemini Omni**.
-  - `higgsfield_generate_image`: Imagens ultra-realistas via **Nano Banana Pro**, **GPT Image 2.5**, **FLUX.2**, **Soul V2**.
-  - `higgsfield_build_motion_prompt`: Gerador de prompts de 5 segundos com coreografia de câmera (push, orbit, tracking, drone).
-  - `higgsfield_virality_predictor`: Análise de retenção e pontuação de viralidade (Brain Activity).
-  - `higgsfield_upload_media`: Upload de imagens/áudio/vídeo locais para o CDN Higgsfield via URL pré-assinada.
-  - `higgsfield_get_status`: Consulta de status de jobs assíncronos.
-  - `higgsfield_list_models`: Catálogo de mais de 40 modelos com restrições e padrões.
-
-- **SDK Python (`src/client.py`):**
-  - Suporte completo às APIs V1 e V2 com autenticação `Key <id>:<secret>`.
-  - Polling assíncrono automático com backoff exponencial.
-  - Upload direto para buckets de armazenamento com URLs pré-assinadas.
-
-- **CLI (`src/cli.py`):**
-  - Comandos equivalentes ao binário nativo `hf`.
+Inclui:
+1. **Web Studio UI (`web/`)**: Plataforma web interativa inspirada em `https://higgsfield.ai` (Explore, Motions Presets, Video Studio, 5s Motion Engine, MCP Console).
+2. **Servidor API (`src/api.py`)**: Backend FastAPI servindo a interface web e conectando aos endpoints oficiais.
+3. **Servidor MCP (`src/mcp_server.py`)**: Model Context Protocol stdio universal (JSON-RPC 2.0) para Antigravity IDE, Claude Desktop, Cursor e Claude Code.
+4. **SDK Python (`src/client.py`)**: Cliente resiliente com suporte a V1, V2, polling e uploads pré-assinados.
+5. **Motor de Prompts Cinematográficos (`src/prompt_engine.py`)**: Motor clean-room de 5 segundos.
+6. **CLI Terminal (`src/cli.py`)**: Interface de linha de comando compatível com o binário `hf`.
 
 ---
 
-## 📦 Configuração Rápida
+## 🎨 Como Iniciar a Plataforma Web Studio
 
-### 1. Variáveis de Ambiente
-Copie `.env.example` para `.env` ou configure no seu ambiente:
+Para rodar a plataforma completa localmente (Interface Web + API):
 
 ```bash
-# Formato V2 / Unificado (Recomendado)
-HF_CREDENTIALS="SEU_KEY_ID:SEU_KEY_SECRET"
-
-# Ou formato V1
-HF_API_KEY="SEU_KEY_ID"
-HF_API_SECRET="SEU_KEY_SECRET"
+# Iniciar o servidor web completo em http://localhost:8000
+python src/api.py
 ```
 
-### 2. Adicionar ao Antigravity / Claude Desktop (MCP)
-No seu arquivo de configuração MCP (`mcp_config.json` ou `claude_desktop_config.json`):
+Acesse **`http://localhost:8000`** no seu navegador para usar o estúdio com:
+- **Explore & Motions**: Explore e recrie em 1 clique os presets virais (Floating Fall, High Flip, Studio Slide).
+- **Video Studio**: Controles completos para **Seedance 2.5**, **Kling 3.0**, **Veo 3.1**, proporções de tela e resoluções.
+- **5s Motion Prompt Engine**: Construtor guiado passo-a-passo com física realista e sufixo canônico.
+- **MCP Console**: Visualizador e gerador de configurações do servidor MCP para seu agente de IA.
+
+---
+
+## 🤖 Como Conectar o Servidor MCP no Antigravity / Claude
+
+No arquivo de configuração do seu ambiente (`mcp_config.json` ou `claude_desktop_config.json`):
 
 ```json
 {
@@ -62,20 +51,20 @@ No seu arquivo de configuração MCP (`mcp_config.json` ou `claude_desktop_confi
 
 ---
 
-## 🛠️ Uso da CLI
+## 🛠️ Uso da Linha de Comando (CLI)
 
 ```bash
 # Listar modelos de vídeo
 python src/cli.py model list --video
 
-# Construir prompt cinematográfico de 5 segundos
+# Gerar prompt de 5 segundos
 python src/cli.py prompt-engine --subject "o turbilhão do relógio girando com precisão" --camera camera_push
 
-# Gerar vídeo com Seedance 2.5
-python src/cli.py generate create seedance_2_5 --prompt "drone shot over a misty canyon at sunrise, natural and realistic motion"
+# Gerar vídeo
+python src/cli.py generate create seedance_2_5 --prompt "slow cinematic camera push-in towards the subject, natural and realistic motion"
 ```
 
 ---
 
 ## 📑 Documentação Técnica
-Consulte o [Dossier de Engenharia Reversa (docs/RECONSTRUCTION_DOSSIER.md)](./docs/RECONSTRUCTION_DOSSIER.md) para detalhes sobre as evidências do MCP REA (`ev_584aa8aef5cbd481976a11e8e7237f25d1a3bbe8efd2d312d6e1d577387ebb79`), contratos de API e análise estática do binário e pacotes.
+Consulte o [Dossier de Engenharia Reversa (docs/RECONSTRUCTION_DOSSIER.md)](./docs/RECONSTRUCTION_DOSSIER.md) para detalhes sobre as evidências do MCP REA (`ev_584aa8aef5cbd481976a11e8e7237f25d1a3bbe8efd2d312d6e1d577387ebb79`), contratos de API e análise estática da aplicação web.

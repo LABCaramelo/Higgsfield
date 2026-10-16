@@ -3,13 +3,13 @@
 **Data de Execução:** 15 de Outubro de 2026  
 **Ambiente:** Windows x64 (NTFS)  
 **Ferramentas Utilizadas:** MCP REA (Reverse Engineer Anything v6.4.0), Node.js, Python 3.14  
-**Status de Reconstrução:** 100% Concluído e Validado
+**Status de Reconstrução:** 100% Concluído e Validado (Backend, MCP e Plataforma Web Studio)
 
 ---
 
 ## 1. Origem e Descoberta de Alvos (Target Routing)
 
-Durante o processo de sondagem e auditoria de alvos, localizamos os artefatos oficiais do ecossistema Higgsfield:
+Durante o processo de sondagem e auditoria de alvos, localizamos e analisamos os artefatos oficiais do ecossistema Higgsfield:
 
 1. **Binário Nativo CLI:** `hf.exe` (Windows PE x86_64, versão 1.1.26, 19.46 MB)
    - SHA-256: `0e973c9cf072ec27af8be61e374c8aba5842766bd21654e28dfa758605ca76da`
@@ -27,6 +27,9 @@ Durante o processo de sondagem e auditoria de alvos, localizamos os artefatos of
 2. **Aplicação JavaScript / SDK Oficial:** `@higgsfield/client` (v0.2.6)
    - SHA-256 do Container: `33e588610bfd1f0a6b3e8823947e29d8c17c7470375ebbd75258addcd546643a`
    - Submetido ao `analyze_javascript_application` do MCP REA.
+
+3. **Plataforma Web Oficial:** `https://higgsfield.ai/`
+   - Análise estática do DOM, sistema de design `quanta` (`data-theme="default-dark"`, `#030304`), tipografia (`Space Grotesk` + `Inter`), paleta oficial com acento laranja elétrico (`#FF5C00`), catálogo de movimentos e rotas de estúdio.
 
 ---
 
@@ -88,8 +91,13 @@ No runtime oficial do Node, o cabeçalho é montado dinamicamente via `String.fr
 
 ## 4. Componentes Recriados
 
-1. **`src/mcp_server.py`:** Servidor MCP oficial stdio (JSON-RPC 2.0) completo, plugável diretamente no Claude, Antigravity, Cursor ou VS Code, expondo ferramentas de vídeo, imagem, upload, predição de viralidade e status.
-2. **`src/client.py`:** Cliente Python robusto implementando V1, V2, upload presigned e polling resiliente.
-3. **`src/prompt_engine.py`:** Motor limpo de engenharia de prompts de movimento de 5 segundos (com câmera cinematográfica, física real e o sufixo canônico `natural and realistic motion`).
-4. **`src/models_catalog.py`:** Especificações, restrições e valores padrão para mais de 40 modelos (Seedance 2.5, Kling 3.0, Veo 3.1, Nano Banana Pro, GPT Image 2.5, Virality Predictor).
-5. **`src/cli.py`:** CLI completo compatível com o executável original `hf`.
+1. **`web/` (Web Studio UI):**
+   - Interface web inspirada na plataforma original com tema obsidian `#030304` e acento `#FF5C00`.
+   - Seções: Explore & Motions, Video Studio (Seedance 2.5), 5s Motion Engine e MCP Console.
+   - Build de produção compilado em `web/dist`.
+2. **`src/api.py`:** Servidor FastAPI servindo os endpoints REST e a aplicação web montada em `http://localhost:8000`.
+3. **`src/mcp_server.py`:** Servidor MCP oficial stdio (JSON-RPC 2.0) completo, plugável diretamente no Claude, Antigravity, Cursor ou VS Code, expondo ferramentas de vídeo, imagem, upload, predição de viralidade e status.
+4. **`src/client.py`:** Cliente Python robusto implementando V1, V2, upload presigned e polling resiliente.
+5. **`src/prompt_engine.py`:** Motor limpo de engenharia de prompts de movimento de 5 segundos.
+6. **`src/models_catalog.py`:** Especificações, restrições e valores padrão para mais de 40 modelos.
+7. **`src/cli.py`:** CLI completo compatível com o executável original `hf`.

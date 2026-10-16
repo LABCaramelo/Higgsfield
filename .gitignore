@@ -5,6 +5,10 @@ _target/
 *.tgz
 *.zip
 
+# Dependencies
+node_modules/
+web/node_modules/
+
 # Python
 __pycache__/
 *.py[cod]
