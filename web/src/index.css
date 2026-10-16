@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import "tailwindcss";
 
 :root {
   --bg-primary: #030304;
@@ -16,15 +16,14 @@
 
 * {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
-body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+html, body {
+  background-color: #030304 !important;
+  color: #f5f5f7;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
   min-height: 100vh;
 }
 
@@ -50,7 +49,7 @@ h1, h2, h3, h4, .font-grotesk {
 
 /* Glassmorphism Classes */
 .glass-panel {
-  background: rgba(18, 19, 26, 0.7);
+  background: rgba(18, 19, 26, 0.75);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-color);
@@ -123,6 +122,8 @@ h1, h2, h3, h4, .font-grotesk {
   border-radius: 6px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  display: inline-block;
+  width: fit-content;
 }
 
 /* Textarea / Input */
