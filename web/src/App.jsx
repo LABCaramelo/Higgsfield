@@ -5,7 +5,8 @@ import {
   RotateCw, RefreshCw, Film, Volume2, VolumeX, ShieldCheck, Zap, ChevronRight,
   ChevronDown, ExternalLink, Info, CheckCircle2, Clapperboard, Palette, Share2, 
   Eye, Download, Maximize2, Plus, Search, Heart, Folder, Home, Grid, 
-  SlidersHorizontal, Camera, Clock, MoveHorizontal, Disc
+  SlidersHorizontal, Camera, Clock, MoveHorizontal, Disc, SlidersVertical,
+  Scissors, ArrowRight, CornerDownRight
 } from 'lucide-react';
 
 const FEATURED_CAROUSEL = [
@@ -96,61 +97,28 @@ const VIRAL_EFFECTS = [
   }
 ];
 
-const COMMUNITY_PROJECTS = [
-  {
-    title: "If you stop loving me, I'll die",
-    author: "Higgsfield Studio",
-    avatar: "https://d2ol7oe51mr4n9.cloudfront.net/user_3GNcyaSCltezE7ot4WtRdn0jfo0/4203e91f-4612-411f-a567-36265f8ee8b9.png",
-    img: "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd2ol7oe51mr4n9.cloudfront.net%2Fuser_3GNcyaSCltezE7ot4WtRdn0jfo0%2F821f8180-f5de-4a1b-b827-57b34a7cbc4d.jpg&w=640&q=85",
-    tag: "Public"
-  },
-  {
-    title: "Cully Hill Boys",
-    author: "Higgsfield Studio",
-    avatar: "https://d2ol7oe51mr4n9.cloudfront.net/user_3GNcyaSCltezE7ot4WtRdn0jfo0/4203e91f-4612-411f-a567-36265f8ee8b9.png",
-    img: "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd2ol7oe51mr4n9.cloudfront.net%2Fuser_3GNcyaSCltezE7ot4WtRdn0jfo0%2F75d860f8-6dde-45d6-ae81-756ddbfe563e.jpg&w=640&q=85",
-    tag: "Public"
-  },
-  {
-    title: "Red Flag",
-    author: "Higgsfield Studio",
-    avatar: "https://d2ol7oe51mr4n9.cloudfront.net/user_3GNcyaSCltezE7ot4WtRdn0jfo0/4203e91f-4612-411f-a567-36265f8ee8b9.png",
-    img: "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd2ol7oe51mr4n9.cloudfront.net%2Fuser_3GNcyaSCltezE7ot4WtRdn0jfo0%2Ff6bf4ce5-2a41-45cb-a099-12bdc1e117c1.jpg&w=640&q=85",
-    tag: "Public"
-  },
-  {
-    title: "Adiliada",
-    author: "Higgsfield Studio",
-    avatar: "https://d2ol7oe51mr4n9.cloudfront.net/user_3GNcyaSCltezE7ot4WtRdn0jfo0/4203e91f-4612-411f-a567-36265f8ee8b9.png",
-    img: "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd2ol7oe51mr4n9.cloudfront.net%2Fuser_3GNcyaSCltezE7ot4WtRdn0jfo0%2F07c550cd-d621-46a1-8cb1-420986027ac9.jpg&w=640&q=85",
-    tag: "Public"
-  }
-];
-
 export default function App() {
-  const [activeTab, setActiveTab] = useState('explore');
+  const [activeTab, setActiveTab] = useState('explore'); // 'explore' | 'video' | 'image' | 'mcp'
   const [copied, setCopied] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // Cinema Studio State
-  const [selectedModel, setSelectedModel] = useState('seedance_2_5');
-  const [aspectRatio, setAspectRatio] = useState('16:9');
+  // ==========================================
+  // CINEMA STUDIO (VIDEO) STATE
+  // ==========================================
+  const [selectedVideoModel, setSelectedVideoModel] = useState('seedance_2_5');
+  const [videoAspect, setVideoAspect] = useState('16:9');
   const [cameraPreset, setCameraPreset] = useState('camera_push');
   const [colorPalette, setColorPalette] = useState('neon_obsidian');
-  const [prompt, setPrompt] = useState('A luxury chronograph watch rotating continuously on an obsidian pedestal, slow cinematic camera push-in towards the subject, light glints over the sapphire crystal, natural and realistic motion');
-  const [referenceMedia, setReferenceMedia] = useState(null);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [videoPrompt, setVideoPrompt] = useState('A luxury chronograph watch rotating continuously on an obsidian pedestal, slow cinematic camera push-in towards the subject, light glints over the sapphire crystal, natural and realistic motion');
+  const [isVideoGenerating, setIsVideoGenerating] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [activeShotId, setActiveShotId] = useState('shot_1');
-  const [showModelPicker, setShowModelPicker] = useState(false);
+  const [showVideoModelPicker, setShowVideoModelPicker] = useState(false);
   const [showCameraPicker, setShowCameraPicker] = useState(false);
   const [showPalettePicker, setShowPalettePicker] = useState(false);
-  const [showRatioPicker, setShowRatioPicker] = useState(false);
-  
   const videoRef = useRef(null);
 
-  // Initial Shot Reel
   const [shots, setShots] = useState([
     {
       id: "shot_1",
@@ -189,32 +157,127 @@ export default function App() {
 
   const activeShot = shots.find(s => s.id === activeShotId) || shots[0];
 
-  const handleGenerate = () => {
-    if (!prompt.trim()) return;
-    setIsGenerating(true);
+  // ==========================================
+  // IMAGE STUDIO STATE
+  // ==========================================
+  const [selectedImageModel, setSelectedImageModel] = useState('nano_banana_2');
+  const [imageAspect, setImageAspect] = useState('1:1');
+  const [imageStyle, setImageStyle] = useState('photorealistic_raw');
+  const [imagePrompt, setImagePrompt] = useState('High-fashion editorial portrait of a woman wearing an architectural charcoal coat, soft natural window light, 35mm film grain, 8k hyper-detailed skin textures');
+  const [isImageGenerating, setIsImageGenerating] = useState(false);
+  const [activeImageId, setActiveImageId] = useState('img_1');
+  const [showImageModelPicker, setShowImageModelPicker] = useState(false);
+  const [showImageStylePicker, setShowImageStylePicker] = useState(false);
+
+  const [images, setImages] = useState([
+    {
+      id: "img_1",
+      name: "Editorial Portrait Trench",
+      model: "nano_banana_2",
+      modelLabel: "Nano Banana Pro",
+      aspect: "1:1",
+      style: "Fashion Editorial",
+      resolution: "4K UHD",
+      url: "https://static-public-media.higgsfield.ai/cards/6603d9a7-fdfe-4d27-a49b-a074e3edbe97.webp",
+      prompt: "High-fashion editorial portrait of a woman wearing an architectural charcoal coat, soft natural window light, 35mm film grain, 8k hyper-detailed skin textures"
+    },
+    {
+      id: "img_2",
+      name: "Cyberpunk Tokyo Geisha",
+      model: "gpt_image_2_5",
+      modelLabel: "GPT Image 2.5",
+      aspect: "9:16",
+      style: "Cyberpunk Neon",
+      resolution: "2K",
+      url: "https://cdn.higgsfield.ai/card/9c6affe8-03a8-4434-97ef-2fc476f7a71e.webp",
+      prompt: "Futuristic cyberpunk Tokyo street with giant holographic koi fish floating between neon skyscrapers in heavy rain, cinematic rim light"
+    },
+    {
+      id: "img_3",
+      name: "Obsidian Tourbillon Watch",
+      model: "nano_banana_2",
+      modelLabel: "Nano Banana Pro",
+      aspect: "16:9",
+      style: "Product Macro",
+      resolution: "4K UHD",
+      url: "https://static-public-media.higgsfield.ai/cards/33b14c34-2394-4580-9b88-16b5e6695528.webp",
+      prompt: "A luxury chronograph tourbillon watch on an obsidian pedestal, micro sapphire gear mechanics, studio key lighting"
+    },
+    {
+      id: "img_4",
+      name: "Desert Twilight Traveler",
+      model: "flux_2",
+      modelLabel: "FLUX.2 Pro",
+      aspect: "16:9",
+      style: "Cinematic Raw",
+      resolution: "2K",
+      url: "https://static-public-media.higgsfield.ai/cards/f35128d2-0067-4ce8-a988-0c198b39669f.webp",
+      prompt: "A lone festival traveler walking through sunset desert dunes, swirling golden dust particles, soft warm backlight"
+    }
+  ]);
+
+  const activeImage = images.find(img => img.id === activeImageId) || images[0];
+
+  // Generate Video
+  const handleGenerateVideo = () => {
+    if (!videoPrompt.trim()) return;
+    setIsVideoGenerating(true);
     const newId = "shot_" + (shots.length + 1);
     
     setTimeout(() => {
       const newShot = {
         id: newId,
         name: `Shot ${shots.length + 1}: Generated Scene`,
-        model: selectedModel,
+        model: selectedVideoModel,
         camera: cameraPreset.replace('_', ' '),
-        aspect: aspectRatio,
+        aspect: videoAspect,
         duration: "5s",
         videoUrl: "https://static-public-media.higgsfield.ai/cards/c94a765b-8ad6-4af3-b884-88ea306d79ff.mp4",
         thumb: "https://static-public-media.higgsfield.ai/cards/6603d9a7-fdfe-4d27-a49b-a074e3edbe97.webp",
-        prompt: prompt
+        prompt: videoPrompt
       };
       setShots(prev => [newShot, ...prev]);
       setActiveShotId(newId);
-      setIsGenerating(false);
-    }, 3000);
+      setIsVideoGenerating(false);
+    }, 2800);
+  };
+
+  // Generate Image
+  const handleGenerateImage = () => {
+    if (!imagePrompt.trim()) return;
+    setIsImageGenerating(true);
+    const newId = "img_" + (images.length + 1);
+
+    setTimeout(() => {
+      const newImg = {
+        id: newId,
+        name: `Image ${images.length + 1}: ${imagePrompt.substring(0, 20)}...`,
+        model: selectedImageModel,
+        modelLabel: selectedImageModel === 'nano_banana_2' ? 'Nano Banana Pro' : selectedImageModel === 'gpt_image_2_5' ? 'GPT Image 2.5' : 'FLUX.2 Pro',
+        aspect: imageAspect,
+        style: imageStyle.replace('_', ' '),
+        resolution: "4K UHD",
+        url: "https://static-public-media.higgsfield.ai/cards/6603d9a7-fdfe-4d27-a49b-a074e3edbe97.webp",
+        prompt: imagePrompt
+      };
+      setImages(prev => [newImg, ...prev]);
+      setActiveImageId(newId);
+      setIsImageGenerating(false);
+    }, 2400);
+  };
+
+  // Signature Bridge: Animate Generated Image into Seedance 2.5 Video
+  const animateImageToVideo = (img) => {
+    const motionPrompt = `${img.prompt}, slow cinematic camera push-in towards the subject, natural realistic motion, high temporal stability`;
+    setVideoPrompt(motionPrompt);
+    setSelectedVideoModel('seedance_2_5');
+    setVideoAspect(img.aspect === '9:16' ? '9:16' : img.aspect === '1:1' ? '1:1' : '16:9');
+    setActiveTab('video');
   };
 
   const openInStudio = (presetPrompt, presetModel = 'seedance_2_5', presetVideo = null) => {
-    setPrompt(presetPrompt);
-    setSelectedModel(presetModel);
+    setVideoPrompt(presetPrompt);
+    setSelectedVideoModel(presetModel);
     if (presetVideo) {
       const newId = "shot_custom_" + Date.now();
       const customShot = {
@@ -232,7 +295,6 @@ export default function App() {
       setActiveShotId(newId);
     }
     setActiveTab('video');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const copyText = (txt) => {
@@ -294,6 +356,12 @@ export default function App() {
               <Film className="w-3.5 h-3.5" /> Cinema Studio 4.0
             </button>
             <button 
+              onClick={() => setActiveTab('image')}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${activeTab === 'image' ? 'bg-[#ff5c00] text-white shadow-sm' : 'text-[#92939e] hover:text-white'}`}
+            >
+              <ImageIcon className="w-3.5 h-3.5" /> Image Studio
+            </button>
+            <button 
               onClick={() => setActiveTab('mcp')}
               className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${activeTab === 'mcp' ? 'bg-[#06b6d4] text-black' : 'text-[#92939e] hover:text-white'}`}
             >
@@ -326,12 +394,11 @@ export default function App() {
       </header>
 
       {/* =========================================================================
-          VIEW 1: EXPLORE SHOWCASE (PUBLIC HOMEPAGE)
+          VIEW 1: EXPLORE SHOWCASE
           ========================================================================= */}
       {activeTab === 'explore' && (
         <main className="flex-1 overflow-y-auto px-4 lg:px-6 py-6 space-y-10 max-w-7xl mx-auto w-full">
-          
-          {/* TOP CAROUSEL: KATANA & ADS MULTIPLIER */}
+          {/* Top Carousel */}
           <section className="w-full">
             <ul className="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
               {FEATURED_CAROUSEL.map(item => (
@@ -370,7 +437,7 @@ export default function App() {
             </ul>
           </section>
 
-          {/* EXPLORE HERO BANNER (SEEDANCE 2.5) & MODEL CARDS GRID */}
+          {/* Hero Banner & Models Grid */}
           <section className="flex flex-col lg:flex-row gap-4 items-stretch">
             <div className="relative w-full lg:w-[48%] shrink-0 min-h-[300px] rounded-2xl overflow-hidden border border-white/15 bg-gradient-to-r from-black/90 to-black/60 p-6 md:p-8 flex flex-col justify-between">
               <video 
@@ -402,29 +469,35 @@ export default function App() {
                 </ul>
               </div>
 
-              <div className="relative z-10 pt-6">
+              <div className="relative z-10 pt-6 flex gap-3">
                 <button 
                   onClick={() => openInStudio('Seedance 2.5 Cinema ultra high fidelity video', 'seedance_2_5')}
                   className="bg-[#d1fe17] hover:brightness-110 text-black px-6 py-2.5 rounded-xl font-bold text-sm transition shadow-[0_4px_20px_rgba(209,254,23,0.35)] flex items-center gap-2"
                 >
-                  <Play className="w-4 h-4 fill-black" /> Open Cinema Studio 4.0
+                  <Play className="w-4 h-4 fill-black" /> Cinema Studio 4.0
+                </button>
+                <button 
+                  onClick={() => setActiveTab('image')}
+                  className="bg-white/10 hover:bg-white/15 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition border border-white/10 flex items-center gap-2"
+                >
+                  <ImageIcon className="w-4 h-4 text-[#ff5c00]" /> Image Studio
                 </button>
               </div>
             </div>
 
-            {/* Right Models Grid */}
+            {/* Right Grid */}
             <div className="grid flex-1 grid-cols-2 md:grid-cols-3 gap-3">
               {[
-                { name: "Seedance 2.5", sub: "The most advanced video model", tag: "TOP", icon: "https://static.higgsfield.ai/explore/image-generate-block/seedance-logo.png", model: "seedance_2_5" },
-                { name: "AI Influencer", sub: "Build your next hype machine", tag: "NEW", icon: "sparkles", model: "nano_banana_2" },
-                { name: "Higgsfield Genjutsu", sub: "One video, many versions", tag: "NEW", icon: "wand", model: "genjutsu" },
-                { name: "Claude & MCP", sub: "Generate media inside Claude", tag: "MCP", icon: "terminal", model: "mcp" },
-                { name: "Cinema Studio 4.0", sub: "Create cinematic scenes effortlessly", tag: null, icon: "https://static.higgsfield.ai/explore/image-generate-block/cinema-studio.png", model: "cinema" },
-                { name: "Supercomputer", sub: "Agent powered by GPT-6 Astra", tag: null, icon: "https://static.higgsfield.ai/explore/image-generate-block/supercomputer-card-icon.svg", model: "supercomputer" }
+                { name: "Seedance 2.5", sub: "The most advanced video model", tag: "TOP", icon: "https://static.higgsfield.ai/explore/image-generate-block/seedance-logo.png", action: () => openInStudio('Seedance 2.5 video', 'seedance_2_5') },
+                { name: "Nano Banana Pro", sub: "Flagship ultra-sharp images", tag: "IMAGE", icon: "sparkles", action: () => setActiveTab('image') },
+                { name: "Higgsfield Genjutsu", sub: "One video, many versions", tag: "NEW", icon: "wand", action: () => openInStudio('Genjutsu reality swap', 'genjutsu') },
+                { name: "GPT Image 2.5", sub: "Graphic design & crisp text", tag: "IMAGE", icon: "image", action: () => setActiveTab('image') },
+                { name: "Cinema Studio 4.0", sub: "Create cinematic scenes effortlessly", tag: null, icon: "https://static.higgsfield.ai/explore/image-generate-block/cinema-studio.png", action: () => setActiveTab('video') },
+                { name: "Supercomputer", sub: "Agent powered by GPT-6 Astra", tag: null, icon: "https://static.higgsfield.ai/explore/image-generate-block/supercomputer-card-icon.svg", action: () => openInStudio('Supercomputer autonomous agent') }
               ].map((m, idx) => (
                 <div 
                   key={idx}
-                  onClick={() => m.model === 'mcp' ? setActiveTab('mcp') : openInStudio(`${m.name} high fidelity shot`, m.model)}
+                  onClick={m.action}
                   className="group cursor-pointer rounded-xl border border-white/10 bg-[#0d0d12] p-4 flex flex-col justify-between hover:border-[#ff5c00]/60 transition"
                 >
                   <div className="flex items-center justify-between w-full">
@@ -432,10 +505,10 @@ export default function App() {
                       <img src={m.icon} alt={m.name} className="w-5 h-5 object-contain" />
                     ) : m.icon === 'sparkles' ? (
                       <Sparkles className="w-5 h-5 text-[#d1fe17]" />
-                    ) : m.icon === 'wand' ? (
-                      <Wand2 className="w-5 h-5 text-[#a855f7]" />
+                    ) : m.icon === 'image' ? (
+                      <ImageIcon className="w-5 h-5 text-[#ff5c00]" />
                     ) : (
-                      <Terminal className="w-5 h-5 text-[#06b6d4]" />
+                      <Wand2 className="w-5 h-5 text-[#a855f7]" />
                     )}
                     {m.tag && (
                       <span className="text-[10px] uppercase font-bold px-1.5 rounded bg-[#ff5c00]/20 text-[#ff772e]">
@@ -452,42 +525,7 @@ export default function App() {
             </div>
           </section>
 
-          {/* AI INFLUENCER BANNER */}
-          <section className="relative w-full rounded-3xl overflow-hidden bg-black border border-white/10 p-8 md:p-14 text-center">
-            <div className="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#d1fe17]/20 via-transparent to-transparent"></div>
-            <img 
-              src="https://static.higgsfield.ai/home/ai-influencer-banner/v1/portrait-left-2.webp" 
-              alt="Model Left" 
-              className="hidden lg:block absolute bottom-0 left-4 h-80 w-auto object-contain pointer-events-none"
-            />
-            <img 
-              src="https://static.higgsfield.ai/home/ai-influencer-banner/v1/portrait-right.webp" 
-              alt="Model Right" 
-              className="hidden lg:block absolute bottom-0 right-4 h-80 w-auto object-contain pointer-events-none"
-            />
-            <div className="relative z-10 max-w-xl mx-auto space-y-4">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#d1fe17]/20 text-[#d1fe17] text-xs font-semibold border border-[#d1fe17]/30">
-                <Sparkles className="w-3.5 h-3.5" /> Try Free
-              </span>
-              <p className="font-grotesk font-bold text-xs uppercase tracking-widest text-[#a0a1ab]">AI Influencer</p>
-              <h2 className="text-3xl md:text-5xl font-extrabold uppercase font-grotesk tracking-tight text-white leading-tight">
-                Build your next hype machine
-              </h2>
-              <p className="text-sm md:text-base text-white/60">
-                Pick the look. Add motion. Build hype.
-              </p>
-              <div className="pt-3">
-                <button 
-                  onClick={() => openInStudio('AI Influencer viral TikTok dance and reaction shot', 'kling3_0')}
-                  className="bg-white text-black hover:bg-neutral-200 px-6 py-3 rounded-xl font-bold text-sm transition shadow-[0_4px_24px_rgba(255,255,255,0.2)]"
-                >
-                  Create your own AI Influencer
-                </button>
-              </div>
-            </div>
-          </section>
-
-          {/* VISUAL EFFECTS MASONRY SHOWCASE */}
+          {/* Visual Effects */}
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
@@ -530,23 +568,19 @@ export default function App() {
               ))}
             </div>
           </section>
-
         </main>
       )}
 
       {/* =========================================================================
-          VIEW 2: REAL CINEMA STUDIO 4.0 WORKSPACE (THE PLATFORM INSIDE)
+          VIEW 2: REAL CINEMA STUDIO 4.0 (VIDEO WORKSPACE)
           ========================================================================= */}
-      {(activeTab === 'video' || activeTab === 'image') && (
+      {activeTab === 'video' && (
         <div className="flex-1 flex overflow-hidden relative">
           
-          {/* ==========================================
-              LEFT ACCESSIBLE FOLDER SIDEBAR (231px)
-              ========================================== */}
+          {/* Accessible Folder Sidebar (231px) */}
           <aside 
             className={`h-full border-r border-white/8 bg-[#18191C] flex flex-col shrink-0 transition-all duration-200 z-30 ${sidebarCollapsed ? 'w-[56px]' : 'w-[230px]'}`}
           >
-            {/* Space Switcher */}
             <div className="p-2 border-b border-white/6 flex items-center justify-between">
               {!sidebarCollapsed ? (
                 <div className="flex items-center gap-2 min-w-0">
@@ -568,11 +602,11 @@ export default function App() {
               </button>
             </div>
 
-            {/* Sidebar Main Nav with Glowing Gradient Icons */}
             <div className="p-2 space-y-1">
               {[
                 { id: "home", label: "Home", gradient: "from-[#222221] to-[#3B3C3A]", icon: Home, action: () => setActiveTab('explore') },
                 { id: "generations", label: "My generations", gradient: "from-[#51E2E0] to-[#125C8D]", icon: Sparkles, active: true },
+                { id: "images", label: "Image Studio", gradient: "from-[#ff5c00] to-[#ff7a29]", icon: ImageIcon, action: () => setActiveTab('image') },
                 { id: "elements", label: "My elements", gradient: "from-[#4188BE] to-[#0E2772]", icon: Palette },
                 { id: "favorites", label: "My favorites", gradient: "from-[#E251B4] to-[#8D1237]", icon: Heart },
                 { id: "community", label: "Community", gradient: "from-[#A5A5A5] to-[#3D3D3D]", icon: Grid, action: () => setActiveTab('explore') }
@@ -593,7 +627,6 @@ export default function App() {
               })}
             </div>
 
-            {/* Projects Divider & Folder List */}
             {!sidebarCollapsed && (
               <div className="flex-1 overflow-y-auto px-2 pt-2 border-t border-white/6 space-y-2">
                 <div className="flex items-center justify-between px-1 text-[11px] font-semibold text-[#92939e] uppercase tracking-wider">
@@ -623,27 +656,12 @@ export default function App() {
                 </div>
               </div>
             )}
-
-            {/* Bottom Credits Footer in Sidebar */}
-            {!sidebarCollapsed && (
-              <div className="p-3 border-t border-white/6 bg-[#121315]">
-                <div className="flex items-center justify-between text-xs pb-1">
-                  <span className="text-[#92939e]">FastAPI Backend</span>
-                  <span className="text-[#4ade80] font-mono text-[10px]">Connected</span>
-                </div>
-                <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
-                  <div className="bg-[#d1fe17] h-full w-3/4"></div>
-                </div>
-              </div>
-            )}
           </aside>
 
-          {/* ==========================================
-              CENTRAL CINEMA WORKSPACE CANVAS
-              ========================================== */}
+          {/* Central Workspace */}
           <section className="flex-1 flex flex-col min-w-0 bg-[#0F1113] overflow-hidden relative">
             
-            {/* Top Scene Controls Toolbar */}
+            {/* Top Toolbar */}
             <div className="h-11 border-b border-white/6 px-4 flex items-center justify-between shrink-0 bg-[#141518]/60 backdrop-blur-sm">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold text-white/90 truncate flex items-center gap-1.5">
@@ -658,20 +676,20 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1 bg-[#1c1d22] p-0.5 rounded-lg border border-white/6 text-xs text-white/70">
                   <button 
-                    onClick={() => setAspectRatio('16:9')}
-                    className={`px-2 py-0.5 rounded text-[11px] font-medium ${aspectRatio === '16:9' ? 'bg-white/10 text-white' : ''}`}
+                    onClick={() => setVideoAspect('16:9')}
+                    className={`px-2 py-0.5 rounded text-[11px] font-medium ${videoAspect === '16:9' ? 'bg-white/10 text-white' : ''}`}
                   >
                     16:9
                   </button>
                   <button 
-                    onClick={() => setAspectRatio('9:16')}
-                    className={`px-2 py-0.5 rounded text-[11px] font-medium ${aspectRatio === '9:16' ? 'bg-white/10 text-white' : ''}`}
+                    onClick={() => setVideoAspect('9:16')}
+                    className={`px-2 py-0.5 rounded text-[11px] font-medium ${videoAspect === '9:16' ? 'bg-white/10 text-white' : ''}`}
                   >
                     9:16
                   </button>
                   <button 
-                    onClick={() => setAspectRatio('1:1')}
-                    className={`px-2 py-0.5 rounded text-[11px] font-medium ${aspectRatio === '1:1' ? 'bg-white/10 text-white' : ''}`}
+                    onClick={() => setVideoAspect('1:1')}
+                    className={`px-2 py-0.5 rounded text-[11px] font-medium ${videoAspect === '1:1' ? 'bg-white/10 text-white' : ''}`}
                   >
                     1:1
                   </button>
@@ -696,18 +714,18 @@ export default function App() {
               </div>
             </div>
 
-            {/* Stage Viewport Area */}
+            {/* Stage Viewport */}
             <div className="flex-1 flex flex-col items-center justify-center p-4 min-h-0 relative">
               <div className="relative w-full h-full max-h-[calc(100vh-270px)] rounded-2xl overflow-hidden bg-black/90 border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.8)] flex items-center justify-center group">
                 
-                {isGenerating ? (
+                {isVideoGenerating ? (
                   <div className="flex flex-col items-center gap-3 text-center p-6">
                     <div className="relative">
                       <div className="w-14 h-14 rounded-full border-4 border-[#d1fe17] border-t-transparent animate-spin"></div>
                       <Sparkles className="w-5 h-5 text-[#d1fe17] absolute inset-0 m-auto animate-pulse" />
                     </div>
                     <div className="space-y-1">
-                      <h4 className="font-grotesk font-bold text-white text-base">Directing Scene with {selectedModel}...</h4>
+                      <h4 className="font-grotesk font-bold text-white text-base">Directing Scene with {selectedVideoModel}...</h4>
                       <p className="text-xs text-[#92939e]">Solving spatial camera vectors and 60fps motion coherence</p>
                     </div>
                   </div>
@@ -723,7 +741,6 @@ export default function App() {
                       className="size-full object-contain"
                     />
 
-                    {/* Stage Overlay Controls */}
                     <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between p-2 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
                       <div className="flex items-center gap-3 text-xs">
                         <button onClick={toggleVideoPlayback} className="hover:text-[#d1fe17] transition">
@@ -750,7 +767,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* Timeline / Shot Sequence Tray */}
+            {/* Reel Timeline */}
             <div className="h-20 shrink-0 border-t border-white/6 px-4 bg-[#141518]/90 flex items-center gap-3 overflow-x-auto hide-scrollbar z-20">
               <span className="text-[10px] uppercase font-bold text-[#92939e] shrink-0 tracking-wider">
                 Reel Timeline
@@ -771,7 +788,7 @@ export default function App() {
                 ))}
 
                 <button 
-                  onClick={() => handleGenerate()}
+                  onClick={() => handleGenerateVideo()}
                   className="w-20 h-14 rounded-xl border border-dashed border-white/20 hover:border-[#d1fe17] text-white/50 hover:text-white flex flex-col items-center justify-center gap-1 transition shrink-0"
                 >
                   <Plus className="w-4 h-4" />
@@ -780,22 +797,18 @@ export default function App() {
               </div>
             </div>
 
-            {/* =========================================================================
-                THE ICONIC FLOATING CINEMATIC PROMPT DOCK
-                ========================================================================= */}
+            {/* Floating Cinematic Prompt Dock */}
             <div className="p-4 pt-1 pb-4 shrink-0 z-30">
               <div className="max-w-4xl mx-auto rounded-2xl border border-white/15 bg-[#18191C]/95 backdrop-blur-xl p-3 shadow-[0_12px_40px_rgba(0,0,0,0.6)] space-y-2">
                 
-                {/* Upper row: Input textarea */}
                 <div className="flex items-center gap-2">
                   <textarea 
                     rows={1}
-                    value={prompt}
-                    onChange={e => setPrompt(e.target.value)}
+                    value={videoPrompt}
+                    onChange={e => setVideoPrompt(e.target.value)}
                     placeholder="Describe scene, character action, lighting and cinematic motion..."
                     className="w-full bg-transparent text-sm text-white placeholder-white/40 outline-none resize-none px-2 py-1 max-h-24"
                   />
-                  
                   <button 
                     onClick={() => {
                       const enhancements = [
@@ -804,7 +817,7 @@ export default function App() {
                         "hyper-detailed depth of field, 35mm film grain, dynamic lighting transitions, realistic motion"
                       ];
                       const chosen = enhancements[Math.floor(Math.random() * enhancements.length)];
-                      setPrompt(prev => prev + ", " + chosen);
+                      setVideoPrompt(prev => prev + ", " + chosen);
                     }}
                     title="Synthesize 5s Motion Prompt"
                     className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-[#a855f7] hover:text-white transition shrink-0"
@@ -813,23 +826,21 @@ export default function App() {
                   </button>
                 </div>
 
-                {/* Bottom row: Pill parameters and glowing Generate Action Button */}
                 <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-white/6">
-                  
                   <div className="flex items-center gap-1.5 flex-wrap">
                     
                     {/* Model Pill */}
                     <div className="relative">
                       <button 
-                        onClick={() => setShowModelPicker(!showModelPicker)}
+                        onClick={() => setShowVideoModelPicker(!showVideoModelPicker)}
                         className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/8 text-xs text-white font-medium transition"
                       >
                         <Film className="w-3 h-3 text-[#ff5c00]" />
-                        <span>{selectedModel === 'seedance_2_5' ? 'Seedance 2.5 Cinema' : selectedModel === 'kling3_0' ? 'Kling 3.0' : selectedModel === 'veo_3_1' ? 'Veo 3.1' : 'Genjutsu'}</span>
+                        <span>{selectedVideoModel === 'seedance_2_5' ? 'Seedance 2.5 Cinema' : selectedVideoModel === 'kling3_0' ? 'Kling 3.0' : selectedVideoModel === 'veo_3_1' ? 'Veo 3.1' : 'Genjutsu'}</span>
                         <ChevronDown className="w-3 h-3 opacity-60" />
                       </button>
 
-                      {showModelPicker && (
+                      {showVideoModelPicker && (
                         <div className="absolute bottom-full left-0 mb-2 w-48 rounded-xl bg-[#1d1e24] border border-white/10 p-1 shadow-2xl z-50 text-xs">
                           {[
                             { id: 'seedance_2_5', label: 'Seedance 2.5 Cinema' },
@@ -840,8 +851,8 @@ export default function App() {
                           ].map(m => (
                             <button
                               key={m.id}
-                              onClick={() => { setSelectedModel(m.id); setShowModelPicker(false); }}
-                              className={`w-full text-left px-2.5 py-1.5 rounded-lg transition ${selectedModel === m.id ? 'bg-[#d1fe17] text-black font-bold' : 'hover:bg-white/5 text-white'}`}
+                              onClick={() => { setSelectedVideoModel(m.id); setShowVideoModelPicker(false); }}
+                              className={`w-full text-left px-2.5 py-1.5 rounded-lg transition ${selectedVideoModel === m.id ? 'bg-[#d1fe17] text-black font-bold' : 'hover:bg-white/5 text-white'}`}
                             >
                               {m.label}
                             </button>
@@ -913,20 +924,17 @@ export default function App() {
                       )}
                     </div>
 
-                    {/* Duration Badge */}
                     <span className="px-2 py-1 rounded-lg bg-white/5 border border-white/8 text-[11px] text-white/70 font-mono">
                       5 sec
                     </span>
-
                   </div>
 
-                  {/* Primary Generate Shot Action Button */}
                   <button 
-                    onClick={handleGenerate}
-                    disabled={isGenerating}
+                    onClick={handleGenerateVideo}
+                    disabled={isVideoGenerating}
                     className="bg-[#d1fe17] hover:brightness-110 disabled:opacity-50 text-black px-5 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 transition shadow-[0_4px_16px_rgba(209,254,23,0.35)] cursor-pointer"
                   >
-                    {isGenerating ? (
+                    {isVideoGenerating ? (
                       <>
                         <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Rendering...
                       </>
@@ -936,7 +944,6 @@ export default function App() {
                       </>
                     )}
                   </button>
-
                 </div>
 
               </div>
@@ -948,7 +955,355 @@ export default function App() {
       )}
 
       {/* =========================================================================
-          VIEW 3: MCP & MULTI-AGENT STUDIO
+          VIEW 3: REAL HIGGSFIELD IMAGE STUDIO (/ai/image)
+          ========================================================================= */}
+      {activeTab === 'image' && (
+        <div className="flex-1 flex overflow-hidden relative">
+          
+          {/* Image Studio Left Sidebar */}
+          <aside 
+            className={`h-full border-r border-white/8 bg-[#18191C] flex flex-col shrink-0 transition-all duration-200 z-30 ${sidebarCollapsed ? 'w-[56px]' : 'w-[230px]'}`}
+          >
+            <div className="p-2 border-b border-white/6 flex items-center justify-between">
+              {!sidebarCollapsed ? (
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-6 h-6 rounded-md bg-[#ff5c00] flex items-center justify-center text-white font-extrabold text-xs shrink-0 shadow">
+                    <ImageIcon className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="font-grotesk font-bold text-xs truncate text-white">Image Studio</span>
+                </div>
+              ) : (
+                <div className="w-6 h-6 rounded-md bg-[#ff5c00] flex items-center justify-center text-white font-extrabold text-xs mx-auto shadow">
+                  <ImageIcon className="w-3.5 h-3.5" />
+                </div>
+              )}
+              <button 
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className="p-1 rounded-lg hover:bg-white/10 text-white/50 hover:text-white transition"
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="p-2 space-y-1">
+              {[
+                { id: "home", label: "Home", gradient: "from-[#222221] to-[#3B3C3A]", icon: Home, action: () => setActiveTab('explore') },
+                { id: "cinema", label: "Cinema Studio", gradient: "from-[#d1fe17] to-[#829b19]", icon: Film, action: () => setActiveTab('video') },
+                { id: "generations", label: "My images", gradient: "from-[#ff5c00] to-[#ff7a29]", icon: ImageIcon, active: true },
+                { id: "elements", label: "My elements", gradient: "from-[#4188BE] to-[#0E2772]", icon: Palette },
+                { id: "favorites", label: "My favorites", gradient: "from-[#E251B4] to-[#8D1237]", icon: Heart },
+                { id: "community", label: "Community", gradient: "from-[#A5A5A5] to-[#3D3D3D]", icon: Grid, action: () => setActiveTab('explore') }
+              ].map(item => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={item.action || (() => {})}
+                    className={`w-full flex items-center gap-2.5 px-2 py-1.5 rounded-xl transition text-left ${item.active ? 'bg-white/10 text-white font-medium' : 'text-[#92939e] hover:bg-white/5 hover:text-white'}`}
+                  >
+                    <span className={`w-6 h-6 rounded-lg bg-gradient-to-br ${item.gradient} flex items-center justify-center text-white shrink-0 shadow-[0_2px_4px_rgba(0,0,0,0.3)]`}>
+                      <Icon className="w-3.5 h-3.5" />
+                    </span>
+                    {!sidebarCollapsed && <span className="text-xs truncate">{item.label}</span>}
+                  </button>
+                );
+              })}
+            </div>
+
+            {!sidebarCollapsed && (
+              <div className="flex-1 overflow-y-auto px-2 pt-2 border-t border-white/6 space-y-2">
+                <div className="flex items-center justify-between px-1 text-[11px] font-semibold text-[#92939e] uppercase tracking-wider">
+                  <span>Image Styles</span>
+                </div>
+
+                <div className="space-y-0.5">
+                  {[
+                    { name: "Photorealistic 35mm Raw", style: "photorealistic_raw" },
+                    { name: "High-Fashion Editorial", style: "fashion_editorial" },
+                    { name: "Cyberpunk & Neon", style: "cyberpunk_neon" },
+                    { name: "Concept Digital Art", style: "concept_art" },
+                    { name: "Product & Commercial", style: "commercial_macro" }
+                  ].map((st, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setImageStyle(st.style)}
+                      className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs transition text-left truncate ${imageStyle === st.style ? 'bg-white/5 text-[#ff5c00] font-semibold' : 'text-white/70 hover:bg-white/5 hover:text-white'}`}
+                    >
+                      <Palette className="w-3.5 h-3.5 shrink-0 opacity-50" />
+                      <span className="truncate">{st.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </aside>
+
+          {/* Image Studio Central Canvas */}
+          <section className="flex-1 flex flex-col min-w-0 bg-[#0F1113] overflow-hidden relative">
+            
+            {/* Top Toolbar */}
+            <div className="h-11 border-b border-white/6 px-4 flex items-center justify-between shrink-0 bg-[#141518]/60 backdrop-blur-sm">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-white/90 truncate flex items-center gap-1.5">
+                  <ImageIcon className="w-3.5 h-3.5 text-[#ff5c00]" />
+                  {activeImage.name}
+                </span>
+                <span className="text-[10px] bg-[#ff5c00]/20 text-[#ff772e] px-2 py-0.5 rounded font-mono font-bold">
+                  {activeImage.modelLabel}
+                </span>
+                <span className="text-[10px] bg-white/10 text-white/80 px-2 py-0.5 rounded font-mono">
+                  {activeImage.resolution}
+                </span>
+              </div>
+
+              {/* Signature Action: Animate into Video Bridge */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => animateImageToVideo(activeImage)}
+                  className="bg-gradient-to-r from-[#d1fe17] to-[#ffff14] hover:brightness-110 text-black px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-[0_2px_12px_rgba(209,254,23,0.3)]"
+                >
+                  <Film className="w-3.5 h-3.5 fill-black" />
+                  <span>Animate with Seedance 2.5</span>
+                  <ArrowRight className="w-3 h-3" />
+                </button>
+
+                <a 
+                  href={activeImage.url} 
+                  download 
+                  className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/80 transition"
+                  title="Download image"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                </a>
+
+                <button 
+                  onClick={() => copyText(activeImage.prompt)}
+                  className="text-xs bg-white/5 hover:bg-white/10 text-white px-2.5 py-1 rounded-lg border border-white/10 transition flex items-center gap-1"
+                >
+                  {copied ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
+                  <span>{copied ? "Copied" : "Copy Prompt"}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Central High-Resolution Viewport */}
+            <div className="flex-1 flex flex-col items-center justify-center p-4 min-h-0 relative">
+              <div className="relative w-full h-full max-h-[calc(100vh-270px)] rounded-2xl overflow-hidden bg-black/90 border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.8)] flex items-center justify-center group">
+                
+                {isImageGenerating ? (
+                  <div className="flex flex-col items-center gap-3 text-center p-6">
+                    <div className="relative">
+                      <div className="w-14 h-14 rounded-full border-4 border-[#ff5c00] border-t-transparent animate-spin"></div>
+                      <Sparkles className="w-5 h-5 text-[#ff5c00] absolute inset-0 m-auto animate-pulse" />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="font-grotesk font-bold text-white text-base">Rendering with {selectedImageModel === 'nano_banana_2' ? 'Nano Banana Pro' : 'GPT Image 2.5'}...</h4>
+                      <p className="text-xs text-[#92939e]">Synthesizing sub-pixel texture maps and optical lighting</p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <img 
+                      src={activeImage.url} 
+                      alt={activeImage.name} 
+                      className="size-full object-contain"
+                    />
+
+                    {/* Overlay Prompt Inspector */}
+                    <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between p-2.5 rounded-xl bg-black/70 backdrop-blur-md border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <p className="text-xs text-white/90 truncate pr-4">
+                        <span className="text-[#ff5c00] font-semibold">Prompt: </span>
+                        {activeImage.prompt}
+                      </p>
+                      <button
+                        onClick={() => animateImageToVideo(activeImage)}
+                        className="bg-[#d1fe17] text-black text-[11px] font-bold px-3 py-1 rounded-lg shrink-0 flex items-center gap-1 shadow"
+                      >
+                        <Play className="w-3 h-3 fill-black" /> Animate Motion
+                      </button>
+                    </div>
+                  </>
+                )}
+
+              </div>
+            </div>
+
+            {/* Recent Images Strip */}
+            <div className="h-20 shrink-0 border-t border-white/6 px-4 bg-[#141518]/90 flex items-center gap-3 overflow-x-auto hide-scrollbar z-20">
+              <span className="text-[10px] uppercase font-bold text-[#92939e] shrink-0 tracking-wider">
+                Gallery Strip
+              </span>
+              
+              <div className="flex items-center gap-2">
+                {images.map((img, idx) => (
+                  <div
+                    key={img.id}
+                    onClick={() => setActiveImageId(img.id)}
+                    className={`relative cursor-pointer rounded-xl overflow-hidden border transition-all shrink-0 w-20 h-14 bg-black flex items-center justify-center ${activeImageId === img.id ? 'border-[#ff5c00] ring-2 ring-[#ff5c00]/30 scale-102' : 'border-white/10 opacity-70 hover:opacity-100'}`}
+                  >
+                    <img src={img.url} alt={img.name} className="size-full object-cover" />
+                    <span className="absolute bottom-1 left-1 bg-black/70 px-1 rounded text-[8px] font-mono text-white">
+                      0{idx + 1}
+                    </span>
+                  </div>
+                ))}
+
+                <button 
+                  onClick={() => handleGenerateImage()}
+                  className="w-16 h-14 rounded-xl border border-dashed border-white/20 hover:border-[#ff5c00] text-white/50 hover:text-white flex flex-col items-center justify-center gap-1 transition shrink-0"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span className="text-[9px] font-semibold">New</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Floating Image Prompt Dock */}
+            <div className="p-4 pt-1 pb-4 shrink-0 z-30">
+              <div className="max-w-4xl mx-auto rounded-2xl border border-white/15 bg-[#18191C]/95 backdrop-blur-xl p-3 shadow-[0_12px_40px_rgba(0,0,0,0.6)] space-y-2">
+                
+                <div className="flex items-center gap-2">
+                  <textarea 
+                    rows={1}
+                    value={imagePrompt}
+                    onChange={e => setImagePrompt(e.target.value)}
+                    placeholder="Describe your subject, camera lens, lighting and composition in detail..."
+                    className="w-full bg-transparent text-sm text-white placeholder-white/40 outline-none resize-none px-2 py-1 max-h-24"
+                  />
+                  <button 
+                    onClick={() => {
+                      const enhancements = [
+                        "Leica 35mm f/1.4 Summilux, Kodak Portra 400 film grain, soft natural window key light, 8k textures",
+                        "Hasselblad H6D-100c medium format, studio editorial rim lighting, hyper-realistic skin pores, volumetric shadows",
+                        "raw uncompressed photograph, dramatic chiaroscuro contrast, ultra-sharp detail, cinematic atmosphere"
+                      ];
+                      const chosen = enhancements[Math.floor(Math.random() * enhancements.length)];
+                      setImagePrompt(prev => prev + ", " + chosen);
+                    }}
+                    title="Enhance Image Prompt"
+                    className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-[#ff5c00] hover:text-white transition shrink-0"
+                  >
+                    <Wand2 className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-white/6">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    
+                    {/* Model Pill */}
+                    <div className="relative">
+                      <button 
+                        onClick={() => setShowImageModelPicker(!showImageModelPicker)}
+                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/8 text-xs text-white font-medium transition"
+                      >
+                        <ImageIcon className="w-3 h-3 text-[#ff5c00]" />
+                        <span>{selectedImageModel === 'nano_banana_2' ? 'Nano Banana Pro' : selectedImageModel === 'gpt_image_2_5' ? 'GPT Image 2.5' : 'FLUX.2 Pro'}</span>
+                        <ChevronDown className="w-3 h-3 opacity-60" />
+                      </button>
+
+                      {showImageModelPicker && (
+                        <div className="absolute bottom-full left-0 mb-2 w-48 rounded-xl bg-[#1d1e24] border border-white/10 p-1 shadow-2xl z-50 text-xs">
+                          {[
+                            { id: 'nano_banana_2', label: 'Nano Banana Pro (Flagship)' },
+                            { id: 'gpt_image_2_5', label: 'GPT Image 2.5' },
+                            { id: 'flux_2', label: 'FLUX.2 Pro' },
+                            { id: 'text2image_soul_v2', label: 'Higgsfield Soul V2' },
+                            { id: 'cinematic_studio_2_5', label: 'Cinematic Studio 2.5' },
+                          ].map(m => (
+                            <button
+                              key={m.id}
+                              onClick={() => { setSelectedImageModel(m.id); setShowImageModelPicker(false); }}
+                              className={`w-full text-left px-2.5 py-1.5 rounded-lg transition ${selectedImageModel === m.id ? 'bg-[#ff5c00] text-white font-bold' : 'hover:bg-white/5 text-white'}`}
+                            >
+                              {m.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Aspect Ratio Pill */}
+                    <div className="flex items-center gap-1 bg-[#141518] p-0.5 rounded-lg border border-white/6 text-xs text-white/70">
+                      {[
+                        { id: '1:1', label: '1:1' },
+                        { id: '9:16', label: '9:16' },
+                        { id: '16:9', label: '16:9' },
+                        { id: '4:5', label: '4:5' }
+                      ].map(r => (
+                        <button
+                          key={r.id}
+                          onClick={() => setImageAspect(r.id)}
+                          className={`px-2 py-0.5 rounded text-[11px] font-medium transition ${imageAspect === r.id ? 'bg-white/10 text-white font-bold' : ''}`}
+                        >
+                          {r.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Style Preset Pill */}
+                    <div className="relative">
+                      <button 
+                        onClick={() => setShowImageStylePicker(!showImageStylePicker)}
+                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/8 text-xs text-white font-medium transition"
+                      >
+                        <Palette className="w-3 h-3 text-[#a855f7]" />
+                        <span className="capitalize">{imageStyle.replace('_', ' ')}</span>
+                        <ChevronDown className="w-3 h-3 opacity-60" />
+                      </button>
+
+                      {showImageStylePicker && (
+                        <div className="absolute bottom-full left-0 mb-2 w-48 rounded-xl bg-[#1d1e24] border border-white/10 p-1 shadow-2xl z-50 text-xs">
+                          {[
+                            { id: 'photorealistic_raw', label: 'Photorealistic Raw 35mm' },
+                            { id: 'fashion_editorial', label: 'Fashion Editorial' },
+                            { id: 'cyberpunk_neon', label: 'Cyberpunk Neon' },
+                            { id: 'concept_art', label: 'Digital Concept Art' },
+                            { id: 'commercial_macro', label: 'Commercial Macro' }
+                          ].map(st => (
+                            <button
+                              key={st.id}
+                              onClick={() => { setImageStyle(st.id); setShowImageStylePicker(false); }}
+                              className={`w-full text-left px-2.5 py-1.5 rounded-lg transition ${imageStyle === st.style ? 'bg-[#a855f7] text-white font-bold' : 'hover:bg-white/5 text-white'}`}
+                            >
+                              {st.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <span className="px-2 py-1 rounded-lg bg-white/5 border border-white/8 text-[11px] text-white/70 font-mono">
+                      4K UHD
+                    </span>
+                  </div>
+
+                  <button 
+                    onClick={handleGenerateImage}
+                    disabled={isImageGenerating}
+                    className="bg-[#ff5c00] hover:bg-[#ff701a] disabled:opacity-50 text-white px-5 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 transition shadow-[0_4px_16px_rgba(255,92,0,0.35)] cursor-pointer"
+                  >
+                    {isImageGenerating ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-3.5 h-3.5 fill-white" /> Generate Image • 10 credits
+                      </>
+                    )}
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+          </section>
+
+        </div>
+      )}
+
+      {/* =========================================================================
+          VIEW 4: MCP CONSOLE
           ========================================================================= */}
       {activeTab === 'mcp' && (
         <main className="flex-1 overflow-y-auto px-4 lg:px-6 py-6 space-y-6 max-w-7xl mx-auto w-full">
@@ -1009,7 +1364,7 @@ export default function App() {
                   <h4 className="font-bold text-sm text-white">Local Server Services</h4>
                 </div>
                 <span className="text-xs text-[#4ade80] bg-[#22c55e]/15 px-2.5 py-1 rounded-full border border-[#22c55e]/30 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#22c55e] animate-ping" /> Online (Port 8000)
+                  <span className="w-2 h-2 rounded-full bg-[#22c55e] animate-ping" /> Online (Port 8080)
                 </span>
               </div>
 
@@ -1017,7 +1372,7 @@ export default function App() {
                 <div className="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between text-xs">
                   <div>
                     <p className="font-semibold text-white">FastAPI Core Suite</p>
-                    <p className="text-[#92939e]">http://localhost:8000</p>
+                    <p className="text-[#92939e]">http://localhost:8080</p>
                   </div>
                   <a href="/docs" target="_blank" className="text-[#ff5c00] hover:underline flex items-center gap-1">
                     API Docs <ExternalLink className="w-3.5 h-3.5" />
