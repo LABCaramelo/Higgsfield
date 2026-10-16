@@ -99,6 +99,20 @@ MODELS: Dict[str, Dict[str, Any]] = {
         "allowed_aspect_ratios": ["1:1", "16:9", "9:16", "4:3", "3:4", "21:9"],
         "allowed_resolutions": ["1k", "2k", "4k"]
     },
+    "gpt_image_2": {
+        "name": "GPT Image 2.0",
+        "type": "image",
+        "description": "Fast image generation with intelligent visual reasoning, sharp text and maximum detail.",
+        "defaults": {
+            "aspect_ratio": "1:1",
+            "quality": "high",
+            "resolution": "2k",
+            "vector_mode": False
+        },
+        "allowed_aspect_ratios": ["1:1", "3:2", "2:3", "4:3", "3:4", "16:9", "9:16", "21:9"],
+        "allowed_qualities": ["basic", "standard", "high", "xhigh", "max"],
+        "allowed_resolutions": ["1k", "2k", "4k"]
+    },
     "gpt_image_2_5": {
         "name": "GPT Image 2.5",
         "type": "image",
@@ -107,10 +121,11 @@ MODELS: Dict[str, Dict[str, Any]] = {
             "aspect_ratio": "1:1",
             "quality": "high",
             "resolution": "2k",
-            "variant": "flare"
+            "variant": "flare",
+            "vector_mode": False
         },
         "allowed_aspect_ratios": ["1:1", "3:2", "2:3", "4:3", "3:4", "16:9", "9:16", "21:9"],
-        "allowed_qualities": ["low", "medium", "high", "xhigh", "max"],
+        "allowed_qualities": ["basic", "standard", "high", "xhigh", "max"],
         "allowed_resolutions": ["1k", "2k", "4k"]
     },
     "flux_2": {

@@ -7,8 +7,9 @@ import {
   Eye, Download, Maximize2, Plus, Search, Heart, Folder, Home, Grid, 
   SlidersHorizontal, Camera, Clock, MoveHorizontal, Disc, SlidersVertical,
   Scissors, ArrowRight, CornerDownRight, Split, Flame, FastForward, Activity,
-  Repeat, UserCheck, Mic, Headphones, Music, Trash2, Radio
+  Repeat, UserCheck, Mic, Headphones, Music, Trash2, Radio, Type, Hash, FileText, LayoutTemplate, Tag
 } from 'lucide-react';
+
 
 
 
@@ -221,6 +222,37 @@ const AUDIO_VOICE_PRESETS = [
   }
 ];
 
+const GPT_IMAGE_FORMAT_PRESETS = [
+  { id: "ig_story", name: "Instagram Story", aspect: "9:16", category: "Social" },
+  { id: "ig_post", name: "Instagram Post", aspect: "1:1", category: "Social" },
+  { id: "tiktok_cover", name: "Reel / TikTok Cover", aspect: "9:16", category: "Social" },
+  { id: "yt_thumb", name: "YouTube Thumbnail", aspect: "16:9", category: "Social" },
+  { id: "x_threads", name: "X / Threads Post", aspect: "16:9", category: "Social" },
+  { id: "pinterest", name: "Pinterest Pin", aspect: "2:3", category: "Social" },
+  { id: "mag_cover", name: "Magazine Cover", aspect: "3:4", category: "Editorial" },
+  { id: "book_cover", name: "Book Cover", aspect: "2:3", category: "Editorial" },
+  { id: "poster", name: "Poster Layout", aspect: "3:4", category: "Editorial" },
+  { id: "billboard", name: "Urban Billboard", aspect: "21:9", category: "Advertising" },
+  { id: "web_hero", name: "Web Hero Banner", aspect: "16:9", category: "Digital" },
+  { id: "vector_icon", name: "Vector Logo / SVG", aspect: "1:1", category: "Branding" }
+];
+
+const GPT_IMAGE_PALETTES = [
+  { id: "obsidian_caramel", name: "Caramelo Noir", colors: ["#101014", "#FF701A", "#FFF4E8", "#FFD52A"] },
+  { id: "cyber_neon", name: "Cyberpunk Tokyo", colors: ["#0F1113", "#38BDF8", "#EC4899", "#D1FE17"] },
+  { id: "acid_modern", name: "Acid Quanta", colors: ["#18191C", "#D1FE17", "#F5F5F7", "#25BFFF"] },
+  { id: "editorial_gold", name: "Editorial Haute", colors: ["#0D0E10", "#E0A96D", "#FFFFFF", "#8C827A"] },
+  { id: "tokyo_violet", name: "Electric Violet", colors: ["#08090C", "#FF3D8D", "#7657FF", "#25BFFF"] }
+];
+
+const GPT_IMAGE_TYPOGRAPHY_CHIPS = [
+  { label: '"Quote Text"', snippet: 'with crisp typography reading "YOUR TEXT HERE"' },
+  { label: 'Magazine Masthead', snippet: 'bold Swiss grotesque typography masthead reading "HORIZON 2026"' },
+  { label: 'Luxury Label', snippet: 'minimalist luxury bottle with embossed metallic serif text reading "AURA NOIR"' },
+  { label: 'Neon Billboard', snippet: 'vibrant glowing neon sign letters reading "NIGHT SHIFT"' },
+  { label: 'Vector Monogram', snippet: 'vector emblem with sharp circular typography "DESIGN LAB • MMXXVI"' }
+];
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('explore'); // 'explore' | 'video' | 'image' | 'genjutsu' | 'audio' | 'mcp'
   const [copied, setCopied] = useState(false);
@@ -290,7 +322,7 @@ export default function App() {
     }
   ]);
 
-  // URL sync for ?model=genjutsu or /audio
+  // URL sync for ?model=genjutsu, /audio, ?model=gpt_image_2 or /ai/image
   useEffect(() => {
     try {
       const search = window.location.search;
@@ -300,6 +332,9 @@ export default function App() {
         setActiveTab('genjutsu');
       } else if (pathname.includes('/audio') || params.get('tab') === 'audio') {
         setActiveTab('audio');
+      } else if (params.get('model') === 'gpt_image_2' || params.get('model') === 'gpt_image_2_5' || pathname.includes('/ai/image')) {
+        setActiveTab('image');
+        setSelectedImageModel(params.get('model') === 'gpt_image_2_5' ? 'gpt_image_2_5' : 'gpt_image_2');
       }
     } catch(e) {}
   }, []);
@@ -317,6 +352,14 @@ export default function App() {
     setActiveTab('audio');
     try {
       window.history.pushState({}, '', '/audio');
+    } catch(e) {}
+  };
+
+  const navigateToImage = (model = 'gpt_image_2') => {
+    setActiveTab('image');
+    setSelectedImageModel(model);
+    try {
+      window.history.pushState({}, '', `/ai/image?model=${model}`);
     } catch(e) {}
   };
 
@@ -377,61 +420,77 @@ export default function App() {
   const activeShot = shots.find(s => s.id === activeShotId) || shots[0];
 
   // ==========================================
-  // IMAGE STUDIO STATE
+  // IMAGE STUDIO STATE (GPT IMAGE 2.0 / NANO BANANA)
   // ==========================================
-  const [selectedImageModel, setSelectedImageModel] = useState('nano_banana_2');
+  const [selectedImageModel, setSelectedImageModel] = useState('gpt_image_2');
   const [imageAspect, setImageAspect] = useState('1:1');
-  const [imageStyle, setImageStyle] = useState('photorealistic_raw');
-  const [imagePrompt, setImagePrompt] = useState('High-fashion editorial portrait of a woman wearing an architectural charcoal coat, soft natural window light, 35mm film grain, 8k hyper-detailed skin textures');
+  const [imageQuality, setImageQuality] = useState('max'); // 'basic' | 'standard' | 'high' | 'xhigh' | 'max'
+  const [imageResolution, setImageResolution] = useState('4k'); // '1k' | '2k' | '4k'
+  const [isVectorMode, setIsVectorMode] = useState(false);
+  const [selectedPaletteId, setSelectedPaletteId] = useState('obsidian_caramel');
+  const [imageStyle, setImageStyle] = useState('commercial_macro');
+  const [imagePrompt, setImagePrompt] = useState('Minimalist luxury frosted glass perfume bottle with crisp embossed serif typography reading "AERIS NO. 04 EAU DE PARFUM", fine print "50ml 1.7 FL.OZ", placed on raw travertine stone, warm morning sunlight and caustics, 8k macro fidelity');
   const [isImageGenerating, setIsImageGenerating] = useState(false);
-  const [activeImageId, setActiveImageId] = useState('img_1');
+  const [activeImageId, setActiveImageId] = useState('img_gpt_1');
   const [showImageModelPicker, setShowImageModelPicker] = useState(false);
   const [showImageStylePicker, setShowImageStylePicker] = useState(false);
+  const [showQualityPicker, setShowQualityPicker] = useState(false);
+  const [showFormatPicker, setShowFormatPicker] = useState(false);
+  const [cfgScale, setCfgScale] = useState(7.5);
+  const [qualitySteps, setQualitySteps] = useState(30);
 
   const [images, setImages] = useState([
     {
-      id: "img_1",
-      name: "Editorial Portrait Trench",
-      model: "nano_banana_2",
-      modelLabel: "Nano Banana Pro",
+      id: "img_gpt_1",
+      name: "AERIS No. 04 Luxury Perfume",
+      model: "gpt_image_2",
+      modelLabel: "GPT Image 2.0",
       aspect: "1:1",
-      style: "Fashion Editorial",
+      style: "Commercial Macro",
+      quality: "Max",
       resolution: "4K UHD",
-      url: "https://static-public-media.higgsfield.ai/cards/6603d9a7-fdfe-4d27-a49b-a074e3edbe97.webp",
-      prompt: "High-fashion editorial portrait of a woman wearing an architectural charcoal coat, soft natural window light, 35mm film grain, 8k hyper-detailed skin textures"
-    },
-    {
-      id: "img_2",
-      name: "Cyberpunk Tokyo Geisha",
-      model: "gpt_image_2_5",
-      modelLabel: "GPT Image 2.5",
-      aspect: "9:16",
-      style: "Cyberpunk Neon",
-      resolution: "2K",
-      url: "https://cdn.higgsfield.ai/card/9c6affe8-03a8-4434-97ef-2fc476f7a71e.webp",
-      prompt: "Futuristic cyberpunk Tokyo street with giant holographic koi fish floating between neon skyscrapers in heavy rain, cinematic rim light"
-    },
-    {
-      id: "img_3",
-      name: "Obsidian Tourbillon Watch",
-      model: "nano_banana_2",
-      modelLabel: "Nano Banana Pro",
-      aspect: "16:9",
-      style: "Product Macro",
-      resolution: "4K UHD",
+      vectorMode: false,
       url: "https://static-public-media.higgsfield.ai/cards/33b14c34-2394-4580-9b88-16b5e6695528.webp",
-      prompt: "A luxury chronograph tourbillon watch on an obsidian pedestal, micro sapphire gear mechanics, studio key lighting"
+      prompt: 'Minimalist luxury frosted glass perfume bottle with crisp embossed serif typography reading "AERIS NO. 04 EAU DE PARFUM", fine print "50ml 1.7 FL.OZ", placed on raw travertine stone, warm morning sunlight and caustics, 8k macro fidelity'
     },
     {
-      id: "img_4",
-      name: "Desert Twilight Traveler",
-      model: "flux_2",
-      modelLabel: "FLUX.2 Pro",
+      id: "img_gpt_2",
+      name: "KINETIC 2026 Magazine Cover",
+      model: "gpt_image_2",
+      modelLabel: "GPT Image 2.0",
+      aspect: "3:4",
+      style: "Fashion Editorial",
+      quality: "Max",
+      resolution: "4K UHD",
+      vectorMode: false,
+      url: "https://static-public-media.higgsfield.ai/cards/6603d9a7-fdfe-4d27-a49b-a074e3edbe97.webp",
+      prompt: 'High-fashion editorial magazine cover with ultra-sharp bold typographic masthead "KINETIC LABORATORY", subtitle "INTERACTION & FORM ISSUE 09", high-contrast studio portrait, 35mm grain, Swiss typography grid'
+    },
+    {
+      id: "img_gpt_3",
+      name: "Electric Shibuya Neon Sign",
+      model: "gpt_image_2",
+      modelLabel: "GPT Image 2.0",
       aspect: "16:9",
-      style: "Cinematic Raw",
+      style: "Cyberpunk Neon",
+      quality: "High",
       resolution: "2K",
+      vectorMode: false,
+      url: "https://cdn.higgsfield.ai/card/9c6affe8-03a8-4434-97ef-2fc476f7a71e.webp",
+      prompt: 'Cinematic rainy night in Shibuya with towering skyscrapers and vibrant glowing pink and cyan neon sign reading "ELECTRIC DREAMS", sharp Japanese kanji text reflections on wet asphalt'
+    },
+    {
+      id: "img_gpt_4",
+      name: "Caramelo Lab Monogram Badge",
+      model: "gpt_image_2",
+      modelLabel: "GPT Image 2.0 (Vector)",
+      aspect: "1:1",
+      style: "Vector Mode",
+      quality: "Max",
+      resolution: "Vector SVG",
+      vectorMode: true,
       url: "https://static-public-media.higgsfield.ai/cards/f35128d2-0067-4ce8-a988-0c198b39669f.webp",
-      prompt: "A lone festival traveler walking through sunset desert dunes, swirling golden dust particles, soft warm backlight"
+      prompt: 'Clean minimalist vector logo badge with circular typography "CARAMELO INTERACTION LAB • EST 2026", geometric monogram in the center, solid ink black on warm cream background, sharp scalable lines'
     }
   ]);
 
@@ -682,10 +741,13 @@ export default function App() {
               <Film className="w-3.5 h-3.5" /> Cinema Studio 4.0
             </button>
             <button 
-              onClick={() => setActiveTab('image')}
+              onClick={() => navigateToImage('gpt_image_2')}
               className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${activeTab === 'image' ? 'bg-[#ff5c00] text-white shadow-sm' : 'text-[#92939e] hover:text-white'}`}
             >
               <ImageIcon className="w-3.5 h-3.5" /> Image Studio
+              {selectedImageModel === 'gpt_image_2' && (
+                <span className="text-[9px] bg-white/20 text-white px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">GPT</span>
+              )}
             </button>
             <button 
               onClick={navigateToGenjutsu}
@@ -816,7 +878,7 @@ export default function App() {
                   <Play className="w-4 h-4 fill-black" /> Cinema Studio 4.0
                 </button>
                 <button 
-                  onClick={() => setActiveTab('image')}
+                  onClick={() => navigateToImage('gpt_image_2')}
                   className="bg-white/10 hover:bg-white/15 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition border border-white/10 flex items-center gap-2"
                 >
                   <ImageIcon className="w-4 h-4 text-[#ff5c00]" /> Image Studio
@@ -828,9 +890,9 @@ export default function App() {
             <div className="grid flex-1 grid-cols-2 md:grid-cols-3 gap-3">
               {[
                 { name: "Seedance 2.5", sub: "The most advanced video model", tag: "TOP", icon: "https://static.higgsfield.ai/explore/image-generate-block/seedance-logo.png", action: () => openInStudio('Seedance 2.5 video', 'seedance_2_5') },
-                { name: "Nano Banana Pro", sub: "Flagship ultra-sharp images", tag: "IMAGE", icon: "sparkles", action: () => setActiveTab('image') },
+                { name: "Nano Banana Pro", sub: "Flagship ultra-sharp images", tag: "IMAGE", icon: "sparkles", action: () => navigateToImage('nano_banana_2') },
                 { name: "Higgsfield Genjutsu", sub: "Motion Transfer & Recast", tag: "TOP", icon: "wand", action: navigateToGenjutsu },
-                { name: "GPT Image 2.5", sub: "Graphic design & crisp text", tag: "IMAGE", icon: "image", action: () => setActiveTab('image') },
+                { name: "GPT Image 2.0", sub: "Graphic design & crisp text", tag: "IMAGE", icon: "image", action: () => navigateToImage('gpt_image_2') },
                 { name: "Cinema Studio 4.0", sub: "Create cinematic scenes effortlessly", tag: null, icon: "https://static.higgsfield.ai/explore/image-generate-block/cinema-studio.png", action: () => setActiveTab('video') },
                 { name: "Supercomputer", sub: "Agent powered by GPT-6 Astra", tag: null, icon: "https://static.higgsfield.ai/explore/image-generate-block/supercomputer-card-icon.svg", action: () => openInStudio('Supercomputer autonomous agent') }
               ].map((m, idx) => (
@@ -1294,85 +1356,241 @@ export default function App() {
       )}
 
       {/* =========================================================================
-          VIEW 3: REAL HIGGSFIELD IMAGE STUDIO (/ai/image)
+          VIEW 3: REAL HIGGSFIELD IMAGE STUDIO (/ai/image?model=gpt_image_2)
           ========================================================================= */}
       {activeTab === 'image' && (
         <div className="flex-1 flex overflow-hidden relative">
           
           {/* Image Studio Left Sidebar */}
           <aside 
-            className={`h-full border-r border-white/8 bg-[#18191C] flex flex-col shrink-0 transition-all duration-200 z-30 ${sidebarCollapsed ? 'w-[56px]' : 'w-[230px]'}`}
+            className={`h-full border-r border-white/8 bg-[#18191C] flex flex-col shrink-0 transition-all duration-200 z-30 ${sidebarCollapsed ? 'w-[56px]' : 'w-[290px]'}`}
           >
-            <div className="p-2 border-b border-white/6 flex items-center justify-between">
+            {/* Header */}
+            <div className="p-3 border-b border-white/6 flex items-center justify-between">
               {!sidebarCollapsed ? (
                 <div className="flex items-center gap-2 min-w-0">
-                  <div className="w-6 h-6 rounded-md bg-[#ff5c00] flex items-center justify-center text-white font-extrabold text-xs shrink-0 shadow">
-                    <ImageIcon className="w-3.5 h-3.5" />
+                  <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-[#ff5c00] to-[#ff7a29] flex items-center justify-center text-white font-extrabold text-xs shrink-0 shadow-[0_0_12px_rgba(255,92,0,0.35)]">
+                    <ImageIcon className="w-4 h-4" />
                   </div>
-                  <span className="font-grotesk font-bold text-xs truncate text-white">Image Studio</span>
+                  <div>
+                    <h3 className="font-grotesk font-bold text-xs truncate text-white leading-tight">Image Studio</h3>
+                    <p className="text-[10px] text-[#ff772e] font-mono">GPT Image 2.0</p>
+                  </div>
                 </div>
               ) : (
-                <div className="w-6 h-6 rounded-md bg-[#ff5c00] flex items-center justify-center text-white font-extrabold text-xs mx-auto shadow">
-                  <ImageIcon className="w-3.5 h-3.5" />
+                <div className="w-7 h-7 rounded-lg bg-[#ff5c00] flex items-center justify-center text-white font-extrabold text-xs mx-auto shadow">
+                  <ImageIcon className="w-4 h-4" />
                 </div>
               )}
               <button 
                 onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                className="p-1 rounded-lg hover:bg-white/10 text-white/50 hover:text-white transition"
+                className="p-1.5 rounded-lg hover:bg-white/10 text-white/50 hover:text-white transition"
               >
                 <SlidersHorizontal className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            <div className="p-2 space-y-1">
-              {[
-                { id: "home", label: "Home", gradient: "from-[#222221] to-[#3B3C3A]", icon: Home, action: () => setActiveTab('explore') },
-                { id: "cinema", label: "Cinema Studio", gradient: "from-[#d1fe17] to-[#829b19]", icon: Film, action: () => setActiveTab('video') },
-                { id: "generations", label: "My images", gradient: "from-[#ff5c00] to-[#ff7a29]", icon: ImageIcon, active: true },
-                { id: "elements", label: "My elements", gradient: "from-[#4188BE] to-[#0E2772]", icon: Palette },
-                { id: "favorites", label: "My favorites", gradient: "from-[#E251B4] to-[#8D1237]", icon: Heart },
-                { id: "community", label: "Community", gradient: "from-[#A5A5A5] to-[#3D3D3D]", icon: Grid, action: () => setActiveTab('explore') }
-              ].map(item => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={item.action || (() => {})}
-                    className={`w-full flex items-center gap-2.5 px-2 py-1.5 rounded-xl transition text-left ${item.active ? 'bg-white/10 text-white font-medium' : 'text-[#92939e] hover:bg-white/5 hover:text-white'}`}
-                  >
-                    <span className={`w-6 h-6 rounded-lg bg-gradient-to-br ${item.gradient} flex items-center justify-center text-white shrink-0 shadow-[0_2px_4px_rgba(0,0,0,0.3)]`}>
-                      <Icon className="w-3.5 h-3.5" />
+            {!sidebarCollapsed ? (
+              <div className="flex-1 overflow-y-auto p-3 space-y-4">
+                
+                {/* Model Profile Card */}
+                <div className="p-3 rounded-xl bg-gradient-to-br from-white/6 to-white/2 border border-white/8 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse"></span>
+                      <span className="text-xs font-bold text-white">GPT Image 2.0</span>
+                    </div>
+                    <span className="text-[9px] bg-[#ff5c00]/20 text-[#ff772e] border border-[#ff5c00]/40 px-1.5 py-0.5 rounded font-mono font-bold">
+                      OpenAI SOTA
                     </span>
-                    {!sidebarCollapsed && <span className="text-xs truncate">{item.label}</span>}
+                  </div>
+                  <p className="text-[11px] text-[#92939e] leading-snug">
+                    Fast image generation with intelligent visual reasoning, sharp text and maximum detail.
+                  </p>
+                  <div className="flex items-center gap-1.5 pt-1 text-[10px] text-white/70">
+                    <span className="px-1.5 py-0.5 rounded bg-black/40 border border-white/6 font-mono">Vector SVG</span>
+                    <span className="px-1.5 py-0.5 rounded bg-black/40 border border-white/6 font-mono">4K UHD</span>
+                    <span className="px-1.5 py-0.5 rounded bg-black/40 border border-white/6 font-mono">Unlimited 1K</span>
+                  </div>
+                </div>
+
+                {/* Quality Tiers */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-[#92939e] uppercase tracking-wider block">
+                    Quality Tier & Detail
+                  </label>
+                  <div className="grid grid-cols-3 gap-1">
+                    {[
+                      { id: 'basic', label: 'Basic', badge: '1x' },
+                      { id: 'standard', label: 'Standard', badge: '1.5x' },
+                      { id: 'high', label: 'High', badge: '2x' },
+                      { id: 'xhigh', label: 'X-High', badge: '3x' },
+                      { id: 'max', label: 'Max', badge: '4x' },
+                    ].map(q => (
+                      <button
+                        key={q.id}
+                        onClick={() => setImageQuality(q.id)}
+                        className={`px-2 py-1.5 rounded-lg border text-left transition flex items-center justify-between ${imageQuality === q.id ? 'bg-[#ff5c00]/20 border-[#ff5c00] text-white font-bold' : 'bg-white/3 border-white/6 hover:bg-white/6 text-white/70'}`}
+                      >
+                        <span className="text-xs">{q.label}</span>
+                        <span className="text-[9px] opacity-60 font-mono">{q.badge}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Resolution Selector */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-[#92939e] uppercase tracking-wider block">
+                    Resolution
+                  </label>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {[
+                      { id: '1k', label: '1K (1024px)', desc: 'Fast & Everyday' },
+                      { id: '2k', label: '2K (2048px)', desc: 'Balanced Fidelity' },
+                      { id: '4k', label: '4K (4096px)', desc: 'Production Detail' }
+                    ].map(res => (
+                      <button
+                        key={res.id}
+                        onClick={() => setImageResolution(res.id)}
+                        className={`p-2 rounded-xl border text-left transition ${imageResolution === res.id ? 'bg-white/10 border-white/30 text-white font-bold' : 'bg-white/3 border-white/6 hover:bg-white/6 text-white/70'}`}
+                      >
+                        <div className="text-xs font-mono">{res.id.toUpperCase()}</div>
+                        <div className="text-[9px] text-[#92939e] truncate">{res.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Vector Mode (SVG) Switch */}
+                <div className="p-3 rounded-xl bg-white/4 border border-white/8 flex items-start gap-2.5">
+                  <button
+                    onClick={() => setIsVectorMode(!isVectorMode)}
+                    className={`mt-0.5 w-8 h-4 rounded-full transition-colors relative shrink-0 ${isVectorMode ? 'bg-[#10b981]' : 'bg-white/20'}`}
+                  >
+                    <span className={`block w-3 h-3 rounded-full bg-white transition-transform ${isVectorMode ? 'translate-x-4' : 'translate-x-0.5'}`} />
                   </button>
-                );
-              })}
-            </div>
-
-            {!sidebarCollapsed && (
-              <div className="flex-1 overflow-y-auto px-2 pt-2 border-t border-white/6 space-y-2">
-                <div className="flex items-center justify-between px-1 text-[11px] font-semibold text-[#92939e] uppercase tracking-wider">
-                  <span>Image Styles</span>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-bold text-white">Vector Mode (SVG)</span>
+                      <span className="text-[9px] bg-[#10b981]/20 text-[#34d399] px-1 rounded font-mono font-bold">New</span>
+                    </div>
+                    <p className="text-[10px] text-[#92939e] leading-snug">
+                      Outputs an editable vector SVG instead of a photo. Stays razor-sharp at any size — great for logos, icons, and typography.
+                    </p>
+                  </div>
                 </div>
 
-                <div className="space-y-0.5">
-                  {[
-                    { name: "Photorealistic 35mm Raw", style: "photorealistic_raw" },
-                    { name: "High-Fashion Editorial", style: "fashion_editorial" },
-                    { name: "Cyberpunk & Neon", style: "cyberpunk_neon" },
-                    { name: "Concept Digital Art", style: "concept_art" },
-                    { name: "Product & Commercial", style: "commercial_macro" }
-                  ].map((st, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setImageStyle(st.style)}
-                      className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs transition text-left truncate ${imageStyle === st.style ? 'bg-white/5 text-[#ff5c00] font-semibold' : 'text-white/70 hover:bg-white/5 hover:text-white'}`}
-                    >
-                      <Palette className="w-3.5 h-3.5 shrink-0 opacity-50" />
-                      <span className="truncate">{st.name}</span>
-                    </button>
-                  ))}
+                {/* Soul Hex Palettes */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-bold text-[#92939e] uppercase tracking-wider">
+                      Control Colors with Soul Hex
+                    </label>
+                  </div>
+                  <div className="space-y-1.5">
+                    {GPT_IMAGE_PALETTES.map(p => (
+                      <div
+                        key={p.id}
+                        onClick={() => {
+                          setSelectedPaletteId(p.id);
+                          setImagePrompt(prev => {
+                            const clean = prev.replace(/\s*\[palette:[^\]]+\]/g, '');
+                            return `${clean} [palette: ${p.colors.join(', ')}]`;
+                          });
+                        }}
+                        className={`p-2 rounded-xl border cursor-pointer transition flex items-center justify-between ${selectedPaletteId === p.id ? 'bg-white/10 border-[#ff5c00]/60' : 'bg-white/3 border-white/6 hover:bg-white/6'}`}
+                      >
+                        <span className="text-xs text-white/90 font-medium truncate">{p.name}</span>
+                        <div className="flex items-center gap-1">
+                          {p.colors.map((c, i) => (
+                            <span 
+                              key={i} 
+                              className="w-3.5 h-3.5 rounded-full border border-black/40 shadow-xs" 
+                              style={{ backgroundColor: c }}
+                              title={c}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
+
+                {/* Use Case / Format Presets */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-[#92939e] uppercase tracking-wider block">
+                    Use Case & Formats
+                  </label>
+                  <div className="grid grid-cols-2 gap-1.5 max-h-48 overflow-y-auto hide-scrollbar">
+                    {GPT_IMAGE_FORMAT_PRESETS.map(fmt => (
+                      <button
+                        key={fmt.id}
+                        onClick={() => setImageAspect(fmt.aspect)}
+                        className={`p-2 rounded-lg border text-left transition flex flex-col gap-0.5 ${imageAspect === fmt.aspect ? 'bg-[#ff5c00]/15 border-[#ff5c00] text-white' : 'bg-white/3 border-white/6 hover:bg-white/6 text-white/70'}`}
+                      >
+                        <span className="text-xs font-semibold truncate">{fmt.name}</span>
+                        <div className="flex items-center justify-between text-[9px] text-[#92939e]">
+                          <span>{fmt.category}</span>
+                          <span className="font-mono">{fmt.aspect}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Advanced Sliders */}
+                <div className="space-y-3 pt-2 border-t border-white/6">
+                  <div>
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="text-[#92939e] text-[11px]">Prompt Strength (CFG)</span>
+                      <span className="font-mono text-white text-[11px]">{cfgScale}</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="1.0" 
+                      max="15.0" 
+                      step="0.5" 
+                      value={cfgScale} 
+                      onChange={e => setCfgScale(parseFloat(e.target.value))}
+                      className="w-full accent-[#ff5c00] h-1.5 bg-white/10 rounded-lg cursor-pointer"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="text-[#92939e] text-[11px]">Quality Steps</span>
+                      <span className="font-mono text-white text-[11px]">{qualitySteps}</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="20" 
+                      max="50" 
+                      step="5" 
+                      value={qualitySteps} 
+                      onChange={e => setQualitySteps(parseInt(e.target.value))}
+                      className="w-full accent-[#ff5c00] h-1.5 bg-white/10 rounded-lg cursor-pointer"
+                    />
+                  </div>
+                </div>
+
+              </div>
+            ) : (
+              <div className="p-2 space-y-3 flex flex-col items-center">
+                <button 
+                  onClick={() => setImageQuality('max')} 
+                  title="Max Quality"
+                  className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-[#ff5c00]"
+                >
+                  MAX
+                </button>
+                <button 
+                  onClick={() => setIsVectorMode(!isVectorMode)} 
+                  title="Toggle Vector SVG"
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${isVectorMode ? 'bg-[#10b981] text-black' : 'bg-white/5 text-white/60'}`}
+                >
+                  SVG
+                </button>
               </div>
             )}
           </aside>
@@ -1393,6 +1611,11 @@ export default function App() {
                 <span className="text-[10px] bg-white/10 text-white/80 px-2 py-0.5 rounded font-mono">
                   {activeImage.resolution}
                 </span>
+                {activeImage.vectorMode && (
+                  <span className="text-[10px] bg-[#10b981]/20 text-[#34d399] px-2 py-0.5 rounded font-mono font-bold">
+                    VECTOR SVG
+                  </span>
+                )}
               </div>
 
               {/* Signature Action: Animate into Video Bridge */}
@@ -1436,8 +1659,8 @@ export default function App() {
                       <Sparkles className="w-5 h-5 text-[#ff5c00] absolute inset-0 m-auto animate-pulse" />
                     </div>
                     <div className="space-y-1">
-                      <h4 className="font-grotesk font-bold text-white text-base">Rendering with {selectedImageModel === 'nano_banana_2' ? 'Nano Banana Pro' : 'GPT Image 2.5'}...</h4>
-                      <p className="text-xs text-[#92939e]">Synthesizing sub-pixel texture maps and optical lighting</p>
+                      <h4 className="font-grotesk font-bold text-white text-base">Rendering with GPT Image 2.0...</h4>
+                      <p className="text-xs text-[#92939e]">Applying visual reasoning, sharp vector typography and optical caustics</p>
                     </div>
                   </div>
                 ) : (
@@ -1449,7 +1672,7 @@ export default function App() {
                     />
 
                     {/* Overlay Prompt Inspector */}
-                    <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between p-2.5 rounded-xl bg-black/70 backdrop-blur-md border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between p-2.5 rounded-xl bg-black/75 backdrop-blur-md border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
                       <p className="text-xs text-white/90 truncate pr-4">
                         <span className="text-[#ff5c00] font-semibold">Prompt: </span>
                         {activeImage.prompt}
@@ -1484,6 +1707,11 @@ export default function App() {
                     <span className="absolute bottom-1 left-1 bg-black/70 px-1 rounded text-[8px] font-mono text-white">
                       0{idx + 1}
                     </span>
+                    {img.vectorMode && (
+                      <span className="absolute top-1 right-1 bg-[#10b981] text-black px-1 rounded text-[7px] font-bold">
+                        SVG
+                      </span>
+                    )}
                   </div>
                 ))}
 
@@ -1497,24 +1725,43 @@ export default function App() {
               </div>
             </div>
 
-            {/* Floating Image Prompt Dock */}
+            {/* Floating Image Prompt Dock with Typography Engine */}
             <div className="p-4 pt-1 pb-4 shrink-0 z-30">
               <div className="max-w-4xl mx-auto rounded-2xl border border-white/15 bg-[#18191C]/95 backdrop-blur-xl p-3 shadow-[0_12px_40px_rgba(0,0,0,0.6)] space-y-2">
                 
+                {/* Quick Typography Chips (GPT Image 2 Feature) */}
+                <div className="flex items-center gap-1.5 overflow-x-auto hide-scrollbar pb-1 text-[11px]">
+                  <span className="text-[10px] font-bold text-[#ff772e] flex items-center gap-1 uppercase tracking-wider shrink-0 pr-1">
+                    <Type className="w-3 h-3" /> Typography:
+                  </span>
+                  {GPT_IMAGE_TYPOGRAPHY_CHIPS.map((chip, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setImagePrompt(prev => prev ? `${prev}, ${chip.snippet}` : chip.snippet);
+                      }}
+                      className="px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/8 text-white/80 hover:text-white transition whitespace-nowrap shrink-0 flex items-center gap-1 text-[11px]"
+                    >
+                      <Plus className="w-2.5 h-2.5 opacity-60" />
+                      <span>{chip.label}</span>
+                    </button>
+                  ))}
+                </div>
+
                 <div className="flex items-center gap-2">
                   <textarea 
                     rows={1}
                     value={imagePrompt}
                     onChange={e => setImagePrompt(e.target.value)}
-                    placeholder="Describe your subject, camera lens, lighting and composition in detail..."
+                    placeholder='Describe your scene or type "Text Here" for typography layout...'
                     className="w-full bg-transparent text-sm text-white placeholder-white/40 outline-none resize-none px-2 py-1 max-h-24"
                   />
                   <button 
                     onClick={() => {
                       const enhancements = [
-                        "Leica 35mm f/1.4 Summilux, Kodak Portra 400 film grain, soft natural window key light, 8k textures",
-                        "Hasselblad H6D-100c medium format, studio editorial rim lighting, hyper-realistic skin pores, volumetric shadows",
-                        "raw uncompressed photograph, dramatic chiaroscuro contrast, ultra-sharp detail, cinematic atmosphere"
+                        'crisp embossed serif typography reading "AERIS", luxury frosted glass, warm directional light, 8k textures',
+                        'bold modern Helvetica typography masthead reading "HORIZON", high contrast studio lighting, 35mm grain',
+                        'clean vector SVG icon with sharp geometric contours and flat modern color palette'
                       ];
                       const chosen = enhancements[Math.floor(Math.random() * enhancements.length)];
                       setImagePrompt(prev => prev + ", " + chosen);
@@ -1536,13 +1783,14 @@ export default function App() {
                         className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/8 text-xs text-white font-medium transition"
                       >
                         <ImageIcon className="w-3 h-3 text-[#ff5c00]" />
-                        <span>{selectedImageModel === 'nano_banana_2' ? 'Nano Banana Pro' : selectedImageModel === 'gpt_image_2_5' ? 'GPT Image 2.5' : 'FLUX.2 Pro'}</span>
+                        <span>{selectedImageModel === 'gpt_image_2' ? 'GPT Image 2.0' : selectedImageModel === 'nano_banana_2' ? 'Nano Banana Pro' : 'FLUX.2 Pro'}</span>
                         <ChevronDown className="w-3 h-3 opacity-60" />
                       </button>
 
                       {showImageModelPicker && (
-                        <div className="absolute bottom-full left-0 mb-2 w-48 rounded-xl bg-[#1d1e24] border border-white/10 p-1 shadow-2xl z-50 text-xs">
+                        <div className="absolute bottom-full left-0 mb-2 w-56 rounded-xl bg-[#1d1e24] border border-white/10 p-1 shadow-2xl z-50 text-xs">
                           {[
+                            { id: 'gpt_image_2', label: 'GPT Image 2.0 (Design & Text)' },
                             { id: 'nano_banana_2', label: 'Nano Banana Pro (Flagship)' },
                             { id: 'gpt_image_2_5', label: 'GPT Image 2.5' },
                             { id: 'flux_2', label: 'FLUX.2 Pro' },
@@ -1565,9 +1813,10 @@ export default function App() {
                     <div className="flex items-center gap-1 bg-[#141518] p-0.5 rounded-lg border border-white/6 text-xs text-white/70">
                       {[
                         { id: '1:1', label: '1:1' },
+                        { id: '3:4', label: '3:4' },
                         { id: '9:16', label: '9:16' },
                         { id: '16:9', label: '16:9' },
-                        { id: '4:5', label: '4:5' }
+                        { id: '21:9', label: '21:9' }
                       ].map(r => (
                         <button
                           key={r.id}
@@ -1579,40 +1828,14 @@ export default function App() {
                       ))}
                     </div>
 
-                    {/* Style Preset Pill */}
-                    <div className="relative">
-                      <button 
-                        onClick={() => setShowImageStylePicker(!showImageStylePicker)}
-                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/8 text-xs text-white font-medium transition"
-                      >
-                        <Palette className="w-3 h-3 text-[#a855f7]" />
-                        <span className="capitalize">{imageStyle.replace('_', ' ')}</span>
-                        <ChevronDown className="w-3 h-3 opacity-60" />
-                      </button>
+                    {/* Quality Pill */}
+                    <span className="px-2 py-1 rounded-lg bg-white/5 border border-white/8 text-[11px] text-[#ff772e] font-mono font-bold uppercase">
+                      {imageQuality}
+                    </span>
 
-                      {showImageStylePicker && (
-                        <div className="absolute bottom-full left-0 mb-2 w-48 rounded-xl bg-[#1d1e24] border border-white/10 p-1 shadow-2xl z-50 text-xs">
-                          {[
-                            { id: 'photorealistic_raw', label: 'Photorealistic Raw 35mm' },
-                            { id: 'fashion_editorial', label: 'Fashion Editorial' },
-                            { id: 'cyberpunk_neon', label: 'Cyberpunk Neon' },
-                            { id: 'concept_art', label: 'Digital Concept Art' },
-                            { id: 'commercial_macro', label: 'Commercial Macro' }
-                          ].map(st => (
-                            <button
-                              key={st.id}
-                              onClick={() => { setImageStyle(st.id); setShowImageStylePicker(false); }}
-                              className={`w-full text-left px-2.5 py-1.5 rounded-lg transition ${imageStyle === st.style ? 'bg-[#a855f7] text-white font-bold' : 'hover:bg-white/5 text-white'}`}
-                            >
-                              {st.label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
+                    {/* Resolution / Vector Pill */}
                     <span className="px-2 py-1 rounded-lg bg-white/5 border border-white/8 text-[11px] text-white/70 font-mono">
-                      4K UHD
+                      {isVectorMode ? 'SVG Vector' : `${imageResolution.toUpperCase()} UHD`}
                     </span>
                   </div>
 
